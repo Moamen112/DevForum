@@ -1,14 +1,27 @@
-const Home = () => {
-  return (
-    <div className="background-light800_dark200 p-8">
-      <h1 className="h2-bold">Tailwind CSS is FUN!!</h1>
-      <p className="font-bold font-space-grotesk">Bold Inter text</p>
-      <p className="font-bold font-inter">Bold Inter text</p>
-      <p className="font-light font-inter">Light Inter text</p>
-      <p className="font-extrabold font-space-grotesk">Extra Bold Inter text</p>
-      <p className="font-extrabold font-inter">Extra Bold Inter text</p>
-    </div>
-  );
-};
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-export default Home;
+export default function Home() {
+  return (
+    <>
+      <h1 className="h1-bold">Shadecn is so fun</h1>
+      <DropdownMenu>
+        <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>Profile</DropdownMenuItem>
+          <DropdownMenuItem>Billing</DropdownMenuItem>
+          <DropdownMenuItem>Team</DropdownMenuItem>
+          <DropdownMenuItem>Subscription</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+  );
+}
