@@ -1,27 +1,32 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { FlatCompat } from "@eslint/eslintrc";
+import js from "@eslint/js";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
+const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
   baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended,
+  allConfig: js.configs.all,
 });
 
-const eslintConfig = [
+const config = [
   {
-    ignores: ["components/ui/**/*"],
+    ignores: ["components/ui/**/*", ".next/**/*"],
   },
-  ...compat.extends(
-    "next/core-web-vitals",
-    "next/typescript",
-    "standard",
-    "prettier"
-    // "plugin:tailwindcss/recommended"
-  ),
+  ...compat
+    .extends(
+      "next/core-web-vitals",
+      "next/typescript",
+      "standard",
+      // "plugin:tailwindcss/recommended",
+      "prettier"
+    )
+    .map((cfg) => ({ ...cfg, files: ["app/**/*"] })),
   {
+    files: ["app/**/*"],
     rules: {
       "import/order": [
         "error",
@@ -57,7 +62,7 @@ const eslintConfig = [
     },
   },
   {
-    files: ["**/*.ts", "**/*.tsx"],
+    files: ["app/**/*.ts", "app/**/*.tsx"],
 
     rules: {
       "no-undef": "off",
@@ -65,4 +70,4 @@ const eslintConfig = [
   },
 ];
 
-export default eslintConfig;
+export default config;
