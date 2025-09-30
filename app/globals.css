@@ -113,6 +113,13 @@ body {
   @apply bg-light-800 dark:dark-gradient;
 }
 
+@utility bg-auth-dark {
+  background-image: url("/images/auth-dark.png");
+}
+@utility bg-auth-light {
+  background-image: url("/images/auth-light.png");
+}
+
 @utility background-light800_dark400 {
   @apply bg-light-800! dark:bg-dark-400!;
   @apply bg-light-800 dark:bg-dark-400;
@@ -574,7 +581,7 @@ code {
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
+  --background: oklch(0% 0 0);
   --foreground: oklch(0.984 0.003 247.858);
   --card: oklch(0.208 0.042 265.755);
   --card-foreground: oklch(0.984 0.003 247.858);
