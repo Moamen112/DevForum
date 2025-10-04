@@ -67,6 +67,15 @@ const config = [
     rules: {
       "no-undef": "off",
     },
+    overrides: [
+      {
+        files: ["*.ts", "*.tsx"],
+        rules: {
+          "no-undef": "off",
+          // "@typescript-eslint/no-use-before-define": ["error"],
+        },
+      },
+    ],
   },
 ];
 
