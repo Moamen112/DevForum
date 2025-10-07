@@ -1,5 +1,6 @@
 // getting-started.js
 import mongoose, { Mongoose } from "mongoose";
+import logger from "./logger";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -26,6 +27,7 @@ if (!cached) {
 
 const dbConnect = async (): Promise<Mongoose> => {
   if (cached.conn) {
+    logger.info("Using existing MongoDB connection");
     return cached.conn;
   }
 
@@ -35,11 +37,11 @@ const dbConnect = async (): Promise<Mongoose> => {
         dbName: "dev-forum",
       })
       .then((result) => {
-        console.log("MongoDB connected");
+        logger.info("MongoDB connected");
         return result;
       })
       .catch((error) => {
-        console.log("MongoDB connection error:", error);
+        logger.error("MongoDB connection error:", error);
         throw error;
       });
   }
@@ -48,3 +50,5 @@ const dbConnect = async (): Promise<Mongoose> => {
 
   return cached.conn;
 };
+
+export default dbConnect;
