@@ -1,0 +1,55 @@
+import { NextResponse } from "next/server";
+import { RequestError, ValidationError } from "../http.errors";
+import { ZodError } from "zod";
+
+export type ResponseType = "api" | "server";
+
+const formateResponse = (
+  responseType: ResponseType,
+  status: number,
+  message: string,
+  errors?: Record<string, string[]>
+) => {
+  const responseContent = {
+    success: false,
+    error: {
+      message,
+      details: errors,
+    },
+  };
+
+  return responseType === "api"
+    ? NextResponse.json(responseContent, { status })
+    : { status, ...responseContent };
+};
+
+const handleError = (error: unknown, responseType: ResponseType = "server") => {
+  if (error instanceof RequestError) {
+    return formateResponse(
+      responseType,
+      error.statusCode,
+      error.message,
+      error.error
+    );
+  }
+
+  if (error instanceof ZodError) {
+    const validationError = new ValidationError(
+      error.flatten().fieldErrors as Record<string, string[]>
+    );
+    return formateResponse(
+      responseType,
+      validationError.statusCode,
+      validationError.message,
+      validationError.error
+    );
+  }
+
+  if (error instanceof Error) {
+    return formateResponse(responseType, 500, error.message);
+  }
+
+  return formateResponse(responseType, 500, "An unexpected error occurred");
+};
+
+export default handleError;
