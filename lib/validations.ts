@@ -69,3 +69,14 @@ export const AskQuestionSchema = z.object({
     .min(1, { message: "Please select at least one tag." })
     .max(3, { message: "You can select up to 3 tags." }),
 });
+
+export const UserSchema = z.object({
+  name: z.string().min(1, { message: "Name is required." }),
+  username: z
+    .string()
+    .min(3, { message: "Username must be atleast 3 charachters long." }),
+  email: z.email({ message: "Email is required" }),
+  bio: z.string().optional(),
+  image: z.url({ message: "Image must be a valid URL." }).optional(),
+  reputation: z.number().optional(),
+});
