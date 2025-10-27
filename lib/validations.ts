@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { email, z } from "zod";
 
 export const SignInSchema = z.object({
   email: z
@@ -79,4 +79,29 @@ export const UserSchema = z.object({
   bio: z.string().optional(),
   image: z.url({ message: "Image must be a valid URL." }).optional(),
   reputation: z.number().optional(),
+});
+
+export const AccountSchema = z.object({
+  userId: z.string().min(1, { message: "User ID is required." }),
+  name: z.string().min(1, { message: "Name is required." }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" })
+    .max(100, { message: "Password cannot exceed 100 characters" })
+    .regex(/[A-Z]/, {
+      message: "Password must contain at least on uppercase letter.",
+    })
+    .regex(/[a-z]/, {
+      message: "Password must contain at least on lowercase letter.",
+    })
+    .regex(/[0-9]/, { message: "Password must contain at least on number" })
+    .regex(/[^a-zA-Z0-9]/, {
+      message: "Password must contain at least on special character.",
+    })
+    .optional(),
+  provider: z.string().min(1, { message: "Provider is required." }),
+  providerAccountId: z
+    .string()
+    .min(1, { message: "Provider Account ID is required." }),
+  image: z.url({ message: "Image must be a valid URL." }).optional(),
 });
