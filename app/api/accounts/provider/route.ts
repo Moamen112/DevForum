@@ -11,10 +11,13 @@ export async function POST(request: Request) {
   const { providerAccountId } = await request.json();
   try {
     await dbConnect();
+    console.log(providerAccountId);
     // Add your logic to handle the email here
     const validatedData = AccountSchema.partial().safeParse({
       providerAccountId,
     });
+
+    console.log("Validated Data:", validatedData);
 
     if (!validatedData.success) {
       throw new ValidationError(validatedData.error.flatten().fieldErrors);

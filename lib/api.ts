@@ -47,7 +47,7 @@ export const api = {
     getByProvider: (provider: string) =>
       fetchHandler(`${API_BASE_URL}/accounts/provider`, {
         method: "POST",
-        body: JSON.stringify({ provider }),
+        body: JSON.stringify({ providerAccountId: provider }),
       }),
     create: (accountData: Partial<IAccount>) =>
       fetchHandler(`${API_BASE_URL}/accounts`, {
