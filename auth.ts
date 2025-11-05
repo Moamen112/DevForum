@@ -51,7 +51,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async session({ session, token }) {
-      session.user.id = token.sub as string;
+      // Prefer the `userId` we stored on the token (which is the DB User _id as a string).
+      // Fall back to token.sub if userId is not present (older flows / providers).
+      session.user.id = (token as any).userId ?? (token.sub as string);
       return session;
     },
 

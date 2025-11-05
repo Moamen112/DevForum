@@ -6,7 +6,7 @@ import Image from "next/image";
 
 interface Props {
   id: string;
-  name: string | null;
+  name: string;
   imgUrl?: string | null;
   className?: string;
 }
