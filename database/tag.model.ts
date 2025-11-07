@@ -5,6 +5,10 @@ export interface ITag {
   questions: number;
 }
 
+export interface ITagDoc extends ITag, Document {
+  _id: Schema.Types.ObjectId;
+}
+
 const TagSchema = new Schema<ITag>(
   {
     name: { type: String, required: true },

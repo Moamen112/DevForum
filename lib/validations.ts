@@ -122,3 +122,11 @@ export const SignInWithOAuthSchema = z.object({
     image: z.url({ message: "Image must be a valid URL." }).optional(),
   }),
 });
+
+export const EditQuestionSchema = AskQuestionSchema.extend({
+  questionId: z.string().min(1, { message: "Question ID is required." }),
+});
+
+export const GetQuestionSchema = z.object({
+  questionId: z.string().min(1, { message: "Question ID is required." }),
+});
