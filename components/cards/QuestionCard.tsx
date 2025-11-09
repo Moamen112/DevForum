@@ -5,6 +5,7 @@ import { title } from "process";
 import React from "react";
 import TagCard from "./TagCard";
 import Metric from "../Metric";
+import { Question } from "@/types/global";
 
 interface Props {
   question: Question;
