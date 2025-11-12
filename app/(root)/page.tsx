@@ -44,7 +44,7 @@ const Home = async ({ searchParams }: SearchParams) => {
           route="/"
           imgSrc="/icons/search.svg"
           placeholder="Search questions..."
-          otherClasses="flex1"
+          otherClasses="flex-1"
         />
       </section>
       <HomeFilter />

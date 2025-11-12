@@ -1,4 +1,4 @@
-import { techMap } from "@/constants/techMap";
+import { techDescriptionMap, techMap } from "@/constants/techMap";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -12,6 +12,43 @@ export const getDeviconClassName = (techName: string) => {
   return techMap[normalizedTeckName]
     ? `${techMap[normalizedTeckName]} colored`
     : "devicon-devicon-plain";
+};
+
+// descriptions.ts
+
+export const getTechDescription = (techName: string): string => {
+  if (!techName || typeof techName !== "string") return "";
+
+  // Normalize the key the same way you did for icons: remove spaces and dots, lowercase.
+  // Keep other characters (like + or #) so keys such as "c++" or "c#" still match.
+  const normalized = techName.replace(/[ .]/g, "").toLowerCase();
+
+  // direct lookup
+  if (techDescriptionMap[normalized]) return techDescriptionMap[normalized];
+
+  // Some helpful extra fallbacks/aliases:
+  // allow "postgres" -> "postgresql", "reactjs" etc. (cover common variants)
+  const aliasMap: { [key: string]: string } = {
+    postgres: "postgresql",
+    postgresql: "postgresql",
+    reactjs: "react",
+    nodejs: "node",
+    mongodb: "mongodb",
+    mongo: "mongodb",
+    ts: "typescript",
+    js: "javascript",
+    cpp: "c++",
+    cplusplus: "c++",
+    "c#": "c#",
+  };
+
+  if (aliasMap[normalized] && techDescriptionMap[aliasMap[normalized]]) {
+    return techDescriptionMap[aliasMap[normalized]];
+  }
+
+  // final wildcard fallback using the original provided techName (trimmed)
+  const cleanedName = techName.trim();
+  return `${cleanedName} is a technology or tool widely used in web development, providing valuable features and capabilities.`;
 };
 
 export const getTimeStamp = (createdAt: Date) => {

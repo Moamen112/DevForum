@@ -196,3 +196,97 @@ export const techMap: { [key: string]: string } = {
   // Three.js
   threejs: "devicon-threejs-original",
 };
+
+export const techDescriptionMap: { [key: string]: string } = {
+  // JavaScript / TypeScript
+  javascript:
+    "Javascript is a powerful language for building dynamic, interactive, and modern web applications.",
+  js: "Javascript is a powerful language for building dynamic, interactive, and modern web applications.",
+  typescript:
+    "TypeScript adds static typing to JavaScript, improving maintainability and developer tooling for large codebases.",
+
+  // Frontend frameworks / libs
+  react:
+    "React is a popular library for building component-based user interfaces with a virtual DOM and declarative patterns.",
+  reactjs:
+    "React is a popular library for building component-based user interfaces with a virtual DOM and declarative patterns.",
+  nextjs:
+    "Next.js is a React framework offering hybrid static & server rendering, routing, and many performance features.",
+  "next.js":
+    "Next.js is a React framework offering hybrid static & server rendering, routing, and many performance features.",
+
+  // Backend / runtimes
+  nodejs:
+    "Node.js is a JavaScript runtime built on Chrome's V8 engine, commonly used for building scalable back-end services.",
+  node: "Node.js is a JavaScript runtime built on Chrome's V8 engine, commonly used for building scalable back-end services.",
+
+  // Languages
+  python:
+    "Python is a versatile, readable language used for web development, data science, scripting, and automation.",
+  java: "Java is a mature, object-oriented language widely used for enterprise systems and Android development.",
+  "c++":
+    "C++ is a high-performance language used for systems programming, games, and performance-critical applications.",
+  cpp: "C++ is a high-performance language used for systems programming, games, and performance-critical applications.",
+  csharp:
+    "C# is a modern, object-oriented language developed by Microsoft, commonly used with .NET for apps and services.",
+  "c#": "C# is a modern, object-oriented language developed by Microsoft, commonly used with .NET for apps and services.",
+
+  // Databases
+  mongodb:
+    "MongoDB is a flexible, document-oriented NoSQL database designed for scalability and rapid development.",
+  mongo:
+    "MongoDB is a flexible, document-oriented NoSQL database designed for scalability and rapid development.",
+  mysql:
+    "MySQL is a widely used relational database known for reliability, performance, and broad ecosystem support.",
+  postgresql:
+    "PostgreSQL is a powerful, open-source relational database with strong standards compliance and advanced features.",
+  postgres:
+    "PostgreSQL is a powerful, open-source relational database with strong standards compliance and advanced features.",
+
+  // DevOps / infra / tools
+  git: "Git is a distributed version control system used to track changes and collaborate on source code.",
+  docker:
+    "Docker packages applications and their dependencies into portable containers to ensure consistency across environments.",
+  kubernetes:
+    "Kubernetes is an orchestration system for automating deployment, scaling, and management of containerized applications.",
+  aws: "AWS (Amazon Web Services) is a comprehensive cloud platform providing compute, storage, databases, and many managed services.",
+  azure:
+    "Microsoft Azure is a cloud platform providing compute, storage, databases, and platform services for building apps and infrastructure.",
+  gcp: "Google Cloud Platform provides cloud services and infrastructure for compute, storage, data analytics, and machine learning.",
+
+  // APIs / query languages
+  graphql:
+    "GraphQL is a query language and runtime that enables clients to request exactly the data they need from APIs.",
+  rest: "REST is an architectural style for designing networked applications and APIs using standard HTTP verbs and resources.",
+
+  // Caching / messaging
+  redis:
+    "Redis is an in-memory data structure store used as a cache, message broker, and for other high-performance needs.",
+  rabbitmq:
+    "RabbitMQ is a message broker that helps decouple and scale distributed systems using asynchronous messaging.",
+
+  // CSS / markup / UI frameworks
+  html: "HTML is the standard markup language for creating web pages and structuring web content.",
+  css: "CSS is the stylesheet language used for describing the presentation of HTML documents.",
+  tailwind:
+    "Tailwind CSS is a utility-first CSS framework that accelerates UI development with composable utility classes.",
+
+  // Testing / build / infra
+  jest: "Jest is a JavaScript testing framework with a focus on simplicity, great defaults, and snapshot testing.",
+  webpack:
+    "Webpack is a module bundler for modern JavaScript applications that supports loaders and plugins.",
+  nginx:
+    "NGINX is a high-performance web server and reverse proxy commonly used to serve static assets and proxy requests.",
+
+  // ORMs / DB tools
+  prisma:
+    "Prisma is a modern ORM that generates type-safe database clients and simplifies database workflows.",
+
+  // Misc
+  linux:
+    "Linux is a family of open-source operating systems commonly used on servers and developer machines.",
+  visualstudio:
+    "Visual Studio is an integrated development environment (IDE) by Microsoft for building apps on multiple platforms.",
+  vscode:
+    "VS Code (Visual Studio Code) is a lightweight, extensible code editor popular among web developers.",
+};
