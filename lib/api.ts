@@ -2,6 +2,7 @@ import { IUser } from "@/database/user.model";
 import { fetchHandler } from "./handlers/fetch";
 import { IAccount } from "@/database/account.model";
 import ROUTES from "@/constants/routes";
+import { SignInWithOAuthParams } from "@/types/action";
 
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3000/api";
 
