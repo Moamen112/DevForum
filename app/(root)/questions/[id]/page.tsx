@@ -1,19 +1,26 @@
 import TagCard from "@/components/cards/TagCard";
 import Preview from "@/components/editor/Preview";
+import AnswerForm from "@/components/forms/AnswerForm";
 import Metric from "@/components/Metric";
 import UserAvatar from "@/components/UserAvatar";
 import ROUTES from "@/constants/routes";
-import { getQuestion } from "@/lib/actions/question.action";
+import { Answer } from "@/database";
+import { getQuestion, incrementViews } from "@/lib/actions/question.action";
 import { formatNumber, getTimeStamp } from "@/lib/utils";
 import { RouteParams, Tag } from "@/types/global";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import React from "react";
-import View from "../View";
+import { success } from "zod";
+import { id } from "zod/v4/locales";
 
 const QuestionDetails = async ({ params }: RouteParams) => {
   const { id } = await params;
   const { success, data: question } = await getQuestion({ questionId: id });
+  after(async () => {
+    await incrementViews({ questionId: id });
+  });
 
   if (!success || !question) {
     return redirect("/404");
@@ -23,7 +30,6 @@ const QuestionDetails = async ({ params }: RouteParams) => {
 
   return (
     <>
-      <View questionId={id} />
       <div className="flex-start w-full flex-col">
         <div className="flex flex-col-reverse w-full justify-between">
           <div className="flex items-center justify-start gap-1">
@@ -83,6 +89,10 @@ const QuestionDetails = async ({ params }: RouteParams) => {
           />
         ))}
       </div>
+
+      <section className="my-5">
+        <AnswerForm />
+      </section>
     </>
   );
 };
