@@ -1,6 +1,6 @@
 "use server";
 
-import Answer, { IAnswer } from "@/database/answer.model";
+import Answer, { IAnswer, IAnswerDoc } from "@/database/answer.model";
 import mongoose from "mongoose";
 import { CreateAnswerParams, GetAnswerParams } from "@/types/action";
 import { ActionResponse, ErrorResponse } from "@/types/global";
@@ -65,7 +65,11 @@ export async function createAnswer(
 export async function getAnswers(
   params: GetAnswerParams
 ): Promise<
-  ActionResponse<{ answers: IAnswer[]; isNext: boolean; totalAnswers: number }>
+  ActionResponse<{
+    answers: IAnswerDoc[];
+    isNext: boolean;
+    totalAnswers: number;
+  }>
 > {
   const validationResult = await action({
     params,

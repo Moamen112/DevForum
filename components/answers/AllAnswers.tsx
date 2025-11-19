@@ -4,7 +4,7 @@ import DataRenderer from "../DataRenderer";
 import { EMPTY_ANSWERS } from "@/constants/states";
 import AnswerCard from "./AnswerCard";
 
-interface Props extends ActionResponse<Answer[]> {
+interface Props extends ActionResponse<Answer[] | []> {
   totalAnswers: number;
 }
 

@@ -107,7 +107,11 @@ const QuestionDetails = async ({ params }: RouteParams) => {
 
       <section className="my-5">
         <AllAnswers
-          data={answerResult?.answers}
+          data={answerResult?.answers?.map((a: any) => ({
+            _id: a._id,
+            createdAt: a.createdAt,
+            ...a,
+          }))}
           success={areAnswerLoaded}
           error={answerError}
           totalAnswers={answerResult?.totalAnswers || 0}
