@@ -1,6 +1,6 @@
 "use client";
 
-import type { ForwardedRef } from "react";
+import { forwardRef, type ForwardedRef } from "react";
 import {
   headingsPlugin,
   listsPlugin,
@@ -39,101 +39,97 @@ import "./dark-editor.css";
 interface Props {
   value: string;
   fieldChange: (value: string) => void;
-  editorRef: ForwardedRef<MDXEditorMethods> | null;
 }
 
 // Only import this to the next file
-const Editor = ({
-  value,
-  fieldChange,
-  editorRef,
-  ...props
-}: Props & MDXEditorProps) => {
-  const { resolvedTheme } = useTheme();
+const Editor = forwardRef<MDXEditorMethods, Props & MDXEditorProps>(
+  ({ value, fieldChange, ...props }: Props & MDXEditorProps, ref) => {
+    const { resolvedTheme } = useTheme();
 
-  const theme = resolvedTheme === "dark" ? [basicDark] : [];
+    const theme = resolvedTheme === "dark" ? [basicDark] : [];
 
-  return (
-    <MDXEditor
-      key={resolvedTheme}
-      className="background-light800_dark200 light-border-2 markdown-editor dark-editor w-full border grid"
-      onChange={fieldChange}
-      plugins={[
-        // Example Plugin Usage
-        headingsPlugin(),
-        listsPlugin(),
-        quotePlugin(),
-        linkPlugin(),
-        imagePlugin(),
-        codeBlockPlugin(),
-        linkDialogPlugin(),
-        quotePlugin(),
-        thematicBreakPlugin(),
-        tablePlugin(),
-        codeMirrorPlugin({
-          codeBlockLanguages: {
-            css: "css",
-            txt: "txt",
-            sql: "sql",
-            html: "html",
-            saas: "saas",
-            scss: "scss",
-            bash: "bash",
-            json: "json",
-            js: "javascript",
-            ts: "typescript",
-            jsx: "jsx",
-            "": "unspecified",
-            tsx: "tsx",
-            md: "markdown",
-          },
-          autoLoadLanguageSupport: true,
-          codeMirrorExtensions: theme,
-        }),
-        diffSourcePlugin({ viewMode: "rich-text", diffMarkdown: "" }),
-        markdownShortcutPlugin(),
-        toolbarPlugin({
-          toolbarContents: () => {
-            return (
-              <ConditionalContents
-                options={[
-                  {
-                    when: (editor) => editor?.editorType === "codeblock",
-                    contents: () => <ChangeCodeMirrorLanguage />,
-                  },
-                  {
-                    fallback: () => (
-                      <>
-                        <UndoRedo />
-                        <Separator />
+    return (
+      <MDXEditor
+        key={resolvedTheme}
+        className="background-light800_dark200 light-border-2 markdown-editor dark-editor w-full border grid"
+        onChange={fieldChange}
+        plugins={[
+          // Example Plugin Usage
+          headingsPlugin(),
+          listsPlugin(),
+          quotePlugin(),
+          linkPlugin(),
+          imagePlugin(),
+          codeBlockPlugin(),
+          linkDialogPlugin(),
+          quotePlugin(),
+          thematicBreakPlugin(),
+          tablePlugin(),
+          codeMirrorPlugin({
+            codeBlockLanguages: {
+              css: "css",
+              txt: "txt",
+              sql: "sql",
+              html: "html",
+              saas: "saas",
+              scss: "scss",
+              bash: "bash",
+              json: "json",
+              js: "javascript",
+              ts: "typescript",
+              jsx: "jsx",
+              "": "unspecified",
+              tsx: "tsx",
+              md: "markdown",
+            },
+            autoLoadLanguageSupport: true,
+            codeMirrorExtensions: theme,
+          }),
+          diffSourcePlugin({ viewMode: "rich-text", diffMarkdown: "" }),
+          markdownShortcutPlugin(),
+          toolbarPlugin({
+            toolbarContents: () => {
+              return (
+                <ConditionalContents
+                  options={[
+                    {
+                      when: (editor) => editor?.editorType === "codeblock",
+                      contents: () => <ChangeCodeMirrorLanguage />,
+                    },
+                    {
+                      fallback: () => (
+                        <>
+                          <UndoRedo />
+                          <Separator />
 
-                        <BoldItalicUnderlineToggles />
-                        <Separator />
+                          <BoldItalicUnderlineToggles />
+                          <Separator />
 
-                        <ListsToggle />
-                        <Separator />
+                          <ListsToggle />
+                          <Separator />
 
-                        <CreateLink />
-                        <InsertImage />
-                        <Separator />
+                          <CreateLink />
+                          <InsertImage />
+                          <Separator />
 
-                        <InsertTable />
-                        <InsertThematicBreak />
+                          <InsertTable />
+                          <InsertThematicBreak />
 
-                        <InsertCodeBlock />
-                      </>
-                    ),
-                  },
-                ]}
-              />
-            );
-          },
-        }),
-      ]}
-      ref={editorRef}
-      {...props}
-    />
-  );
-};
+                          <InsertCodeBlock />
+                        </>
+                      ),
+                    },
+                  ]}
+                />
+              );
+            },
+          }),
+        ]}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
 
 export default Editor;

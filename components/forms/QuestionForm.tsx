@@ -2,7 +2,7 @@
 
 import { AskQuestionSchema } from "@/lib/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useRef, useTransition } from "react";
+import React, { useEffect, useRef, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -49,6 +49,9 @@ const QuestionForm = ({ question, isEdit }: Params) => {
       tags: question?.tags.map((tag) => tag.name) || [],
     },
   });
+  useEffect(() => {
+    console.log("QuestionOne", editorRef);
+  }, []);
 
   const handleInputKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
@@ -164,7 +167,7 @@ const QuestionForm = ({ question, isEdit }: Params) => {
                   markdown={field.value}
                   value={field.value}
                   fieldChange={field.onChange}
-                  editorRef={editorRef}
+                  ref={editorRef}
                 />
               </FormControl>
               <FormDescription className="body-regular text-light-500 mt-2.5">
