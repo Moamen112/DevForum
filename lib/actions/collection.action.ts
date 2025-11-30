@@ -13,7 +13,7 @@ import handleError from "../handlers/error";
 import { Collection, Question } from "@/database";
 import ROUTES from "@/constants/routes";
 import { revalidatePath } from "next/cache";
-import mongoose, { PipelineStage } from "mongoose";
+import mongoose, { FilterQuery, PipelineStage } from "mongoose";
 
 export async function toggleSaveQuestion(
   params: CollectionBaseParams
@@ -158,10 +158,11 @@ export async function getSaveQuestions(
       });
     }
 
-    const [totalCount] = await Collection.aggregate([
+    const totalCountResult = await Collection.aggregate([
       ...pipeline,
       { $count: "count" },
     ]);
+    const totalCount = totalCountResult[0]?.count ?? 0;
     pipeline.push({ $sort: sortCriteria }, { $skip: skip }, { $limit: limit });
     pipeline.push({
       $project: {
@@ -171,7 +172,7 @@ export async function getSaveQuestions(
     });
 
     const questions = await Collection.aggregate(pipeline);
-    const isNext = totalCount.count > skip + questions.length;
+    const isNext = totalCount > skip + questions.length;
 
     return {
       success: true,

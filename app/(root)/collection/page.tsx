@@ -1,7 +1,62 @@
-import React from "react";
+import Link from "next/link";
 
-const Collections = () => {
-  return <div>Collections</div>;
+import QuestionCard from "@/components/cards/QuestionCard";
+import HomeFilter from "@/components/filters/HomeFilter";
+import LocalSearch from "@/components/search/LocalSearch";
+import { Button } from "@/components/ui/button";
+import ROUTES from "@/constants/routes";
+import handleError from "@/lib/handlers/error";
+import { api } from "@/lib/api";
+import { auth } from "@/auth";
+import { getQuestions } from "@/lib/actions/question.action";
+import DataRenderer from "@/components/DataRenderer";
+import { EMPTY_COLLECTION, EMPTY_QUESTION } from "@/constants/states";
+import { getSaveQuestions } from "@/lib/actions/collection.action";
+
+interface SearchParams {
+  searchParams: Promise<{ [key: string]: string }>;
+}
+
+const Collections = async ({ searchParams }: SearchParams) => {
+  const { page, query, pageSize, filter } = await searchParams;
+
+  const { success, data, error } = await getSaveQuestions({
+    page: Number(page) || 1,
+    pageSize: Number(pageSize) || 10,
+    query: query || "",
+    filter: filter || "",
+  });
+
+  const { collection } = data || {};
+
+  return (
+    <>
+      <h1 className="h1-bold text-dar100_light900">Saved Questions</h1>
+      <div className="mt-11 flex justify-between gap-5 max-sm:flex-col sm:items-center">
+        <LocalSearch
+          route={ROUTES.COLLECTION}
+          imgSrc="/icons/search.svg"
+          placeholder="Search questions..."
+          otherClasses="flex-1"
+        />
+      </div>
+      {
+        <DataRenderer
+          success={success}
+          error={error}
+          data={collection}
+          empty={EMPTY_COLLECTION}
+          render={(collection) => (
+            <div className="mt-10 flex w-full flex-col gap-6">
+              {collection.map((item) => (
+                <QuestionCard key={item._id} question={item.question} />
+              ))}
+            </div>
+          )}
+        />
+      }
+    </>
+  );
 };
 
 export default Collections;
