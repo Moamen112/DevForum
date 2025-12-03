@@ -40,7 +40,7 @@ const QuestionDetails = async ({ params, searchParams }: RouteParams) => {
   } = await getAnswers({
     questionId: id,
     page: page ? Number(page) : 1,
-    pageSize: pageSize ? Number(pageSize) : 10,
+    pageSize: pageSize ? Number(pageSize) : 2,
     filter: filter ? String(filter) : "latest",
   });
 
@@ -134,6 +134,8 @@ const QuestionDetails = async ({ params, searchParams }: RouteParams) => {
 
       <section className="my-5">
         <AllAnswers
+          page={Number(page) || 1}
+          isNext={answerResult?.isNext || false}
           data={answerResult?.answers?.map((a: any) => ({
             _id: a._id,
             createdAt: a.createdAt,
