@@ -21,8 +21,9 @@ import React, { Suspense } from "react";
 import { success } from "zod";
 import { id } from "zod/v4/locales";
 
-const QuestionDetails = async ({ params }: RouteParams) => {
+const QuestionDetails = async ({ params, searchParams }: RouteParams) => {
   const { id } = await params;
+  const { page, pageSize, filter } = await searchParams;
   const { success, data: question } = await getQuestion({ questionId: id });
   after(async () => {
     await incrementViews({ questionId: id });
@@ -38,9 +39,9 @@ const QuestionDetails = async ({ params }: RouteParams) => {
     error: answerError,
   } = await getAnswers({
     questionId: id,
-    page: 1,
-    pageSize: 10,
-    filter: "latest",
+    page: page ? Number(page) : 1,
+    pageSize: pageSize ? Number(pageSize) : 10,
+    filter: filter ? String(filter) : "latest",
   });
 
   const hasVotedPromise = hasVoted({
