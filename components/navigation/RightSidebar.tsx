@@ -5,18 +5,15 @@ import React from "react";
 import TagCard from "../cards/TagCard";
 import { getHotQuestions } from "@/lib/actions/question.action";
 import DataRenderer from "../DataRenderer";
-
-const popularTags = [
-  { _id: "1", name: "react", questions: 100 },
-  { _id: "2", name: "javascript", questions: 200 },
-  { _id: "3", name: "typescript", questions: 150 },
-  { _id: "4", name: "nextjs", questions: 350 },
-  { _id: "5", name: "react-query", questions: 50 },
-  { _id: "6", name: "redux", questions: 120 },
-];
+import { getTopTags } from "@/lib/tag.action";
 
 const RightSidebar = async () => {
-  const { success, data: hotQuestions } = await getHotQuestions();
+  const { success, data: hotQuestions, error } = await getHotQuestions();
+  const {
+    success: tagsSuccess,
+    data: tags,
+    error: tagsError,
+  } = await getTopTags();
   return (
     <section className="pt-36 custom-scrollbar background-light900_dark200 light-border sticky right-0 top-0 flex h-screen w-[350px] flex-col gap-6 overflow-y-auto border-l p-6 shadow-light-300 dark:shadow-none max-xl:hidden">
       <div>
@@ -25,6 +22,7 @@ const RightSidebar = async () => {
           <DataRenderer
             success={success}
             data={hotQuestions}
+            error={error}
             empty={{
               title: "No Questions found",
               message: "No questions have been asked yet",
@@ -55,16 +53,29 @@ const RightSidebar = async () => {
       <div className="mt-16 ">
         <h3 className="h3-bold text-dark200_light900">Popular Tags</h3>
         <div className="mt-7 flex flex-col gap-4">
-          {popularTags.map(({ _id, name, questions }) => (
-            <TagCard
-              key={_id}
-              _id={_id}
-              name={name}
-              questions={questions}
-              showCount
-              compact
-            />
-          ))}
+          <DataRenderer
+            success={tagsSuccess}
+            data={tags}
+            error={tagsError}
+            empty={{
+              title: "No Tags found",
+              message: "No popular tags available",
+            }}
+            render={(tags) => (
+              <div className="mt-7 flex flex-col gap-4">
+                {tags.map(({ _id, name, questions }) => (
+                  <TagCard
+                    key={_id}
+                    _id={_id}
+                    name={name}
+                    questions={questions}
+                    showCount
+                    compact
+                  />
+                ))}
+              </div>
+            )}
+          />
         </div>
       </div>
     </section>
