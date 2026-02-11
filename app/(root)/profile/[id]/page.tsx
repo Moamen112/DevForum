@@ -1,7 +1,11 @@
 import { auth } from "@/auth";
 import ProfileLink from "@/components/user/ProfileLink";
 import UserAvatar from "@/components/UserAvatar";
-import { getUser, getUserQuestions } from "@/lib/actions/user.action";
+import {
+  getUser,
+  getUserQuestions,
+  getUsersAnswers,
+} from "@/lib/actions/user.action";
 import { RouteParams } from "@/types/global";
 import { notFound } from "next/navigation";
 import dayjs from "dayjs";
@@ -13,6 +17,7 @@ import { EMPTY_QUESTION } from "@/constants/states";
 import DataRenderer from "@/components/DataRenderer";
 import QuestionCard from "@/components/cards/QuestionCard";
 import Pagination from "@/components/Pagination";
+import AnswerCard from "@/components/answers/AnswerCard";
 
 const Profile = async ({ params, searchParams }: RouteParams) => {
   const { id } = await params;
@@ -46,7 +51,18 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
     pageSize: pageSize ? Number(pageSize) : 10,
   });
 
+  const {
+    success: userAnswersSuccess,
+    data: userAnswers,
+    error: userAnswersError,
+  } = await getUsersAnswers({
+    userId: id,
+    page: page ? Number(page) : 1,
+    pageSize: pageSize ? Number(pageSize) : 10,
+  });
+
   const { questions, isNext: hasMoreQuestions } = userQuestions!;
+  const { answers, isNext: hasMoreAnswers } = userAnswers!;
 
   const { _id, name, image, portfolio, location, username, bio, createdAt } =
     user;
@@ -139,7 +155,26 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
             <Pagination page={page} isNext={hasMoreQuestions} />
           </TabsContent>
           <TabsContent value="answers" className="flex w-full flex-col gap-6">
-            List of answers will go here.
+            <DataRenderer
+              success={userAnswersSuccess}
+              data={answers}
+              error={userAnswersError}
+              empty={EMPTY_QUESTION}
+              render={(answers) => (
+                <div className="flex w-full flex-col gap-6">
+                  {answers.map((answer) => (
+                    <AnswerCard
+                      key={answer._id}
+                      {...answer}
+                      content={answer.content.slice(0, 27)}
+                      containerClasses="card-wrapper rounded-[10px] px-7 py-9 sm:px-11"
+                      showReadMore
+                    />
+                  ))}
+                </div>
+              )}
+            />
+            <Pagination page={page} isNext={hasMoreAnswers} />
           </TabsContent>
         </Tabs>
         <div className="flex w-full min-w-[250px] flex-1 flex-col max-lg:hidden">

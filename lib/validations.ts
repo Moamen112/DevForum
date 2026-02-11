@@ -200,3 +200,7 @@ export const GetUserSchema = z.object({
 export const GetUserQuestionsSchema = PaginatedSearchSchema.extend({
   userId: z.string().min(1, { message: "User ID is required." }),
 });
+
+export const GetUsersAnswersSchema = PaginatedSearchSchema.extend({
+    userId: z.string().min(1, { message: "User ID is required." }),
+})
