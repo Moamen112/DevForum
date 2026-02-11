@@ -5,6 +5,7 @@ import {
   getUser,
   getUserQuestions,
   getUsersAnswers,
+  getuserTopTags,
 } from "@/lib/actions/user.action";
 import { RouteParams } from "@/types/global";
 import { notFound } from "next/navigation";
@@ -18,6 +19,7 @@ import DataRenderer from "@/components/DataRenderer";
 import QuestionCard from "@/components/cards/QuestionCard";
 import Pagination from "@/components/Pagination";
 import AnswerCard from "@/components/answers/AnswerCard";
+import TagCard from "@/components/cards/TagCard";
 
 const Profile = async ({ params, searchParams }: RouteParams) => {
   const { id } = await params;
@@ -61,8 +63,17 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
     pageSize: pageSize ? Number(pageSize) : 10,
   });
 
+  const {
+    success: userTopTagsSuccess,
+    data: userTopTags,
+    error: userTopTagsError,
+  } = await getuserTopTags({
+    userId: id,
+  });
+
   const { questions, isNext: hasMoreQuestions } = userQuestions!;
   const { answers, isNext: hasMoreAnswers } = userAnswers!;
+  const { tags } = userTopTags!;
 
   const { _id, name, image, portfolio, location, username, bio, createdAt } =
     user;
@@ -180,7 +191,26 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
         <div className="flex w-full min-w-[250px] flex-1 flex-col max-lg:hidden">
           <h3 className="h3-bold text-dark300_light900">Top Tech</h3>
           <div className="mt-7 flex flex-col gap-4">
-            <p>List of tags</p>
+            <DataRenderer
+              success={userTopTagsSuccess}
+              data={tags}
+              error={userTopTagsError}
+              empty={EMPTY_QUESTION}
+              render={(tags) => (
+                <div className="flex w-full flex-col gap-6">
+                  {tags.map((tag) => (
+                    <TagCard
+                      key={tag._id}
+                      _id={tag._id}
+                      name={tag.name}
+                      questions={tag.count}
+                      showCount
+                      compact
+                    />
+                  ))}
+                </div>
+              )}
+            />
           </div>
         </div>
       </section>
