@@ -1,47 +1,40 @@
 "use server";
 
-import {
-  ActionResponse,
-  Answer as AnswerType,
-  ErrorResponse,
-  PaginatedSearchParams,
-  User as UserType,
-} from "@/types/global";
-import action from "../handlers/actions";
+import { FilterQuery, PipelineStage, Types } from "mongoose";
+
+import { Answer, Question, User } from "@/database";
+
+import action from "../handlers/action";
+import handleError from "../handlers/error";
+import { assignBadges } from "../utils";
 import {
   GetUserQuestionsSchema,
+  GetUsersAnswersSchema,
   GetUserSchema,
   GetUserTagsSchema,
-  PaginatedSearchSchema,
+  PaginatedSearchParamsSchema,
+  UpdateUserSchema,
 } from "../validations";
-import handleError from "../handlers/error";
-import { FilterQuery, PipelineStage, Types } from "mongoose";
-import { Answer, Question, User } from "@/database";
-import {
-  GetUserAnswersParams,
-  GetUserParams,
-  GetUserQuestionsParams,
-  GetUserTagsParams,
-} from "@/types/action";
-import { Question as QuestionType } from "@/types/global";
-import { count } from "console";
 
-export async function getUsers(
-  params: PaginatedSearchParams
-): Promise<ActionResponse<{ users: UserType[]; isNext: boolean }>> {
+export async function getUsers(params: PaginatedSearchParams): Promise<
+  ActionResponse<{
+    users: User[];
+    isNext: boolean;
+  }>
+> {
   const validationResult = await action({
     params,
-    schema: PaginatedSearchSchema,
+    schema: PaginatedSearchParamsSchema,
   });
 
   if (validationResult instanceof Error) {
     return handleError(validationResult) as ErrorResponse;
   }
 
-  const { page = 1, pageSize = 10, query = "", filter } = params;
+  const { page = 1, pageSize = 10, query, filter } = params;
 
-  const skip = (Number(page) - 1) * Number(pageSize);
-  const limit = Number(pageSize);
+  const skip = (Number(page) - 1) * pageSize;
+  const limit = pageSize;
 
   const filterQuery: FilterQuery<typeof User> = {};
 
@@ -64,6 +57,7 @@ export async function getUsers(
     case "popular":
       sortCriteria = { reputation: -1 };
       break;
+
     default:
       sortCriteria = { createdAt: -1 };
       break;
@@ -77,11 +71,14 @@ export async function getUsers(
       .skip(skip)
       .limit(limit);
 
-    const isNext = skip + users.length < totalUsers;
+    const isNext = totalUsers > skip + users.length;
 
     return {
       success: true,
-      data: { users: JSON.parse(JSON.stringify(users)), isNext },
+      data: {
+        users: JSON.parse(JSON.stringify(users)),
+        isNext,
+      },
     };
   } catch (error) {
     return handleError(error) as ErrorResponse;
@@ -90,9 +87,7 @@ export async function getUsers(
 
 export async function getUser(params: GetUserParams): Promise<
   ActionResponse<{
-    user: UserType;
-    totalQuestions: number;
-    totalAnswers: number;
+    user: User;
   }>
 > {
   const validationResult = await action({
@@ -108,20 +103,12 @@ export async function getUser(params: GetUserParams): Promise<
 
   try {
     const user = await User.findById(userId);
-
-    if (!user) {
-      throw new Error("User not found.");
-    }
-
-    const totalQuestions = await Question.countDocuments({ author: userId });
-    const totalAnswers = await Answer.countDocuments({ author: userId });
+    if (!user) throw new Error("User not found");
 
     return {
       success: true,
       data: {
         user: JSON.parse(JSON.stringify(user)),
-        totalQuestions,
-        totalAnswers,
       },
     };
   } catch (error) {
@@ -131,7 +118,7 @@ export async function getUser(params: GetUserParams): Promise<
 
 export async function getUserQuestions(params: GetUserQuestionsParams): Promise<
   ActionResponse<{
-    questions: QuestionType[];
+    questions: Question[];
     isNext: boolean;
   }>
 > {
@@ -144,10 +131,10 @@ export async function getUserQuestions(params: GetUserQuestionsParams): Promise<
     return handleError(validationResult) as ErrorResponse;
   }
 
-  const { userId, page = 1, pageSize = 10 } = params;
+  const { page = 1, pageSize = 10, userId } = params;
 
-  const skip = (Number(page) - 1) * Number(pageSize);
-  const limit = Number(pageSize);
+  const skip = (Number(page) - 1) * pageSize;
+  const limit = pageSize;
 
   try {
     const totalQuestions = await Question.countDocuments({ author: userId });
@@ -155,11 +142,11 @@ export async function getUserQuestions(params: GetUserQuestionsParams): Promise<
     const questions = await Question.find({ author: userId })
       .populate("tags", "name")
       .populate("author", "name image")
-      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const isNext = skip + questions.length < totalQuestions;
+    const isNext = totalQuestions > skip + questions.length;
+
     return {
       success: true,
       data: {
@@ -172,36 +159,38 @@ export async function getUserQuestions(params: GetUserQuestionsParams): Promise<
   }
 }
 
-export async function getUsersAnswers(params: GetUserAnswersParams): Promise<
+export async function getUserAnswers(params: GetUserAnswersParams): Promise<
   ActionResponse<{
-    answers: AnswerType[];
+    answers: Answer[];
     isNext: boolean;
   }>
 > {
   const validationResult = await action({
     params,
-    schema: GetUserQuestionsSchema,
+    schema: GetUsersAnswersSchema,
   });
 
   if (validationResult instanceof Error) {
     return handleError(validationResult) as ErrorResponse;
   }
 
-  const { userId, page = 1, pageSize = 10 } = params;
+  const { page = 1, pageSize = 10, userId } = params;
 
-  const skip = (Number(page) - 1) * Number(pageSize);
-  const limit = Number(pageSize);
+  const skip = (Number(page) - 1) * pageSize;
+  const limit = pageSize;
 
   try {
-    const totalAnswers = await Answer.countDocuments({ author: userId });
+    const totalAnswers = await Answer.countDocuments({
+      author: userId,
+    });
 
     const answers = await Answer.find({ author: userId })
-      .populate("author", "name image")
-      .sort({ createdAt: -1 })
+      .populate("author", "_id name image")
       .skip(skip)
       .limit(limit);
 
-    const isNext = skip + answers.length < totalAnswers;
+    const isNext = totalAnswers > skip + answers.length;
+
     return {
       success: true,
       data: {
@@ -214,15 +203,12 @@ export async function getUsersAnswers(params: GetUserAnswersParams): Promise<
   }
 }
 
-export async function getuserTopTags(params: GetUserTagsParams): Promise<
-  ActionResponse<{
-    tags: { _id: string; name: string; count: number }[];
-  }>
+export async function getUserTopTags(
+  params: GetUserTagsParams
+): Promise<
+  ActionResponse<{ tags: { _id: string; name: string; count: number }[] }>
 > {
-  const validationResult = await action({
-    params,
-    schema: GetUserTagsSchema,
-  });
+  const validationResult = await action({ params, schema: GetUserTagsSchema });
 
   if (validationResult instanceof Error) {
     return handleError(validationResult) as ErrorResponse;
@@ -231,10 +217,10 @@ export async function getuserTopTags(params: GetUserTagsParams): Promise<
   const { userId } = params;
 
   try {
-    const pipline: PipelineStage[] = [
-      { $match: { author: new Types.ObjectId(userId) } },
-      { $unwind: "$tags" },
-      { $group: { _id: "$tags", count: { $sum: 1 } } },
+    const pipeline: PipelineStage[] = [
+      { $match: { author: new Types.ObjectId(userId) } }, // Find user's questions
+      { $unwind: "$tags" }, // Flatten tags array
+      { $group: { _id: "$tags", count: { $sum: 1 } } }, // Count occurrences
       {
         $lookup: {
           from: "tags",
@@ -244,16 +230,118 @@ export async function getuserTopTags(params: GetUserTagsParams): Promise<
         },
       },
       { $unwind: "$tagInfo" },
-      { $sort: { count: -1 } },
-      { $limit: 10 },
-      { $project: { _id: "$tagInfo._id", name: "$tagInfo.name", count: 1 } },
+      { $sort: { count: -1 } }, // Sort by most used
+      { $limit: 10 }, // Get top 10
+      {
+        $project: {
+          _id: "$tagInfo._id",
+          name: "$tagInfo.name",
+          count: 1,
+        },
+      },
     ];
 
-    const tags = await Question.aggregate(pipline);
+    const tags = await Question.aggregate(pipeline);
 
     return {
       success: true,
       data: { tags: JSON.parse(JSON.stringify(tags)) },
+    };
+  } catch (error) {
+    return handleError(error) as ErrorResponse;
+  }
+}
+
+export async function getUserStats(params: GetUserParams): Promise<
+  ActionResponse<{
+    totalQuestions: number;
+    totalAnswers: number;
+    badges: Badges;
+  }>
+> {
+  const validationResult = await action({
+    params,
+    schema: GetUserSchema,
+  });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { userId } = params;
+
+  try {
+    const [questionStats] = await Question.aggregate([
+      { $match: { author: new Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+          upvotes: { $sum: "$upvotes" },
+          views: { $sum: "$views" },
+        },
+      },
+    ]);
+
+    const [answerStats] = await Answer.aggregate([
+      { $match: { author: new Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+          upvotes: { $sum: "$upvotes" },
+        },
+      },
+    ]);
+
+    const badges = assignBadges({
+      criteria: [
+        { type: "ANSWER_COUNT", count: answerStats.count },
+        { type: "QUESTION_COUNT", count: questionStats.count },
+        {
+          type: "QUESTION_UPVOTES",
+          count: questionStats.upvotes + answerStats.upvotes,
+        },
+        { type: "TOTAL_VIEWS", count: questionStats.views },
+      ],
+    });
+
+    return {
+      success: true,
+      data: {
+        totalQuestions: questionStats.count,
+        totalAnswers: answerStats.count,
+        badges,
+      },
+    };
+  } catch (error) {
+    return handleError(error) as ErrorResponse;
+  }
+}
+
+export async function updateUser(
+  params: UpdateUserParams
+): Promise<ActionResponse<{ user: User }>> {
+  const validationResult = await action({
+    params,
+    schema: UpdateUserSchema,
+    authorize: true,
+  });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { user } = validationResult.session!;
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(user?.id, params, {
+      new: true,
+    });
+
+    return {
+      success: true,
+      data: { user: JSON.parse(JSON.stringify(updatedUser)) },
     };
   } catch (error) {
     return handleError(error) as ErrorResponse;

@@ -1,6 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   DefaultValues,
   FieldValues,
@@ -20,14 +22,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import Link from "next/link";
 import ROUTES from "@/constants/routes";
-import { ActionResponse } from "@/types/global";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { toast } from "@/hooks/use-toast";
 
 interface AuthFormProps<T extends FieldValues> {
-  schema: ZodType<T, any, any>;
+  schema: ZodType<T>;
   defaultValues: T;
   onSubmit: (data: T) => Promise<ActionResponse>;
   formType: "SIGN_IN" | "SIGN_UP";
@@ -40,6 +39,7 @@ const AuthForm = <T extends FieldValues>({
   onSubmit,
 }: AuthFormProps<T>) => {
   const router = useRouter();
+
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: defaultValues as DefaultValues<T>,
@@ -47,16 +47,23 @@ const AuthForm = <T extends FieldValues>({
 
   const handleSubmit: SubmitHandler<T> = async (data) => {
     const result = (await onSubmit(data)) as ActionResponse;
+
     if (result?.success) {
-      toast.success(
-        formType === "SIGN_IN"
-          ? "Signed in successfully"
-          : "Signed up successfully"
-      );
+      toast({
+        title: "Success",
+        description:
+          formType === "SIGN_IN"
+            ? "Signed in successfully"
+            : "Signed up successfully",
+      });
 
       router.push(ROUTES.HOME);
     } else {
-      toast.error(result?.error?.message);
+      toast({
+        title: `Error ${result?.status}`,
+        description: result?.error?.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -66,9 +73,8 @@ const AuthForm = <T extends FieldValues>({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="space-y-6 mt-10"
+        className="mt-10 space-y-6"
       >
-        {/* {buttonText} */}
         {Object.keys(defaultValues).map((field) => (
           <FormField
             key={field}
@@ -78,7 +84,7 @@ const AuthForm = <T extends FieldValues>({
               <FormItem className="flex w-full flex-col gap-2.5">
                 <FormLabel className="paragraph-medium text-dark400_light700">
                   {field.name === "email"
-                    ? "Email address"
+                    ? "Email Address"
                     : field.name.charAt(0).toUpperCase() + field.name.slice(1)}
                 </FormLabel>
                 <FormControl>
@@ -86,28 +92,29 @@ const AuthForm = <T extends FieldValues>({
                     required
                     type={field.name === "password" ? "password" : "text"}
                     {...field}
-                    className="paragraph-regular background-light900_dark300 light-border-2 text-dark-300_light700 no-focus min-h-12 reounded-1.5 border"
+                    className="paragraph-regular background-light900_dark300 light-border-2 text-dark300_light700 no-focus min-h-12 rounded-1.5 border"
                   />
                 </FormControl>
-
                 <FormMessage />
               </FormItem>
             )}
           />
         ))}
+
         <Button
           disabled={form.formState.isSubmitting}
-          className="primary-gradient paragraph-medium min-h-12 w-full rounded-2 px-4 py-3 font-inter !text-light-900 cursor-pointer"
+          className="primary-gradient paragraph-medium min-h-12 w-full rounded-2 px-4 py-3 font-inter !text-light-900"
         >
           {form.formState.isSubmitting
             ? buttonText === "Sign In"
-              ? "Signing In..."
+              ? "Signin In..."
               : "Signing Up..."
             : buttonText}
         </Button>
+
         {formType === "SIGN_IN" ? (
           <p>
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link
               href={ROUTES.SIGN_UP}
               className="paragraph-semibold primary-text-gradient"

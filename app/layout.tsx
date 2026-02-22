@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
 import { SessionProvider } from "next-auth/react";
+import { ReactNode } from "react";
 
+import "./globals.css";
 import { auth } from "@/auth";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
 import ThemeProvider from "@/context/Theme";
 
 const inter = localFont({
@@ -12,6 +13,7 @@ const inter = localFont({
   variable: "--font-inter",
   weight: "100 200 300 400 500 700 800 900",
 });
+
 const spaceGrotesk = localFont({
   src: "./fonts/SpaceGroteskVF.ttf",
   variable: "--font-space-grotesk",
@@ -19,18 +21,17 @@ const spaceGrotesk = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "DevForum",
+  title: "DevFlow",
   description:
-    "A community-driven platform for asking and answering programming questions. Get help, share knowledge, and collaborate with developers from around the world. Explore topics in web development, mobile app development, algorithms, data structures, and more",
-  icons: "/images/site-logo.svg",
+    "A community-driven platform for asking and answering programming questions. Get help, share knowledge, and collaborate with developers from around the world. Explore topics in web development, mobile app development, algorithms, data structures, and more.",
+  icons: {
+    icon: "/images/site-logo.svg",
+  },
 };
 
-const RootLayout = async ({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) => {
+const RootLayout = async ({ children }: { children: ReactNode }) => {
   const session = await auth();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -51,8 +52,8 @@ const RootLayout = async ({
             disableTransitionOnChange
           >
             {children}
-            <Toaster richColors position="top-center" />
           </ThemeProvider>
+          <Toaster />
         </body>
       </SessionProvider>
     </html>

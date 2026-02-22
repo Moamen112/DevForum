@@ -11,48 +11,50 @@ export const DEFAULT_EMPTY = {
 };
 
 export const DEFAULT_ERROR = {
-  title: "Oops! Something Went Wrong",
-  message: "Even our code can have a bad day. Give it another shot!",
+  title: "Something Went Wrong",
+  message: "Even our code can have a bad day. Give it another shot.",
   button: {
-    text: "Try Again",
+    text: "Retry Request",
     href: ROUTES.HOME,
   },
 };
 
 export const EMPTY_QUESTION = {
-  title: "No Questions Yet",
-  message: "The question board is empty, maybe it's time to ask the first one?",
+  title: "Ahh, No Questions Yet!",
+  message:
+    "The question board is empty. Maybe it’s waiting for your brilliant question to get things rolling",
   button: {
     text: "Ask a Question",
     href: ROUTES.ASK_QUESTION,
   },
 };
 
-export const EMPTY_TAG = {
-  title: "No Tags Available",
-  message: "There are currently no tags. Be the first to create one!",
+export const EMPTY_TAGS = {
+  title: "No Tags Found",
+  message: "The tag cloud is empty. Add some keywords to make it rain.",
   button: {
     text: "Create Tag",
     href: ROUTES.TAGS,
   },
 };
+
 export const EMPTY_ANSWERS = {
   title: "No Answers Found",
   message:
-    "The answer board is empty. Make it rain with your brilliant answers!",
+    "The answer board is empty. Make it rain with your brilliant answer.",
 };
 
-export const EMPTY_COLLECTION = {
-  title: "No Collections Found",
+export const EMPTY_COLLECTIONS = {
+  title: "Collections Are Empty",
   message:
-    "You haven't created any collections yet. Start building your collections now!",
+    "Looks like you haven’t created any collections yet. Start curating something extraordinary today",
   button: {
-    text: "Create Collection",
+    text: "Save to Collection",
     href: ROUTES.COLLECTION,
   },
 };
 
 export const EMPTY_USERS = {
   title: "No Users Found",
-  message: "You're ALONE. the only one here more users are coming soon...",
+  message: "You're ALONE. The only one here. More uses are coming soon!",
 };

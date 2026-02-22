@@ -1,12 +1,13 @@
 "use client";
 
-import { SheetClose } from "@/components/ui/sheet";
-import { sidebarLinks } from "@/constants";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
+
+import { SheetClose } from "@/components/ui/sheet";
+import { sidebarLinks } from "@/constants";
+import { cn } from "@/lib/utils";
 
 const NavLinks = ({
   isMobileNav = false,
@@ -26,9 +27,10 @@ const NavLinks = ({
 
         if (item.route === "/profile") {
           if (userId) item.route = `${item.route}/${userId}`;
+          else return null;
         }
 
-        const linkComponent = (
+        const LinkComponent = (
           <Link
             href={item.route}
             key={item.label}
@@ -59,10 +61,10 @@ const NavLinks = ({
 
         return isMobileNav ? (
           <SheetClose asChild key={item.route}>
-            {linkComponent}
+            {LinkComponent}
           </SheetClose>
         ) : (
-          <React.Fragment key={item.route}>{linkComponent}</React.Fragment>
+          <React.Fragment key={item.route}>{LinkComponent}</React.Fragment>
         );
       })}
     </>

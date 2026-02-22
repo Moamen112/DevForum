@@ -1,14 +1,16 @@
-import ROUTES from "@/constants/routes";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { Avatar, AvatarFallback } from "./ui/avatar";
-import Image from "next/image";
+
+import ROUTES from "@/constants/routes";
 import { cn } from "@/lib/utils";
+
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
 interface Props {
   id: string;
   name: string;
-  imgUrl?: string | null;
+  imageUrl?: string | null;
   className?: string;
   fallbackClassName?: string;
 }
@@ -16,7 +18,7 @@ interface Props {
 const UserAvatar = ({
   id,
   name,
-  imgUrl,
+  imageUrl,
   className = "h-9 w-9",
   fallbackClassName,
 }: Props) => {
@@ -26,15 +28,17 @@ const UserAvatar = ({
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
   return (
     <Link href={ROUTES.PROFILE(id)}>
       <Avatar className={cn("relative", className)}>
-        {imgUrl && imgUrl.trim() !== "" ? (
+        {imageUrl ? (
           <Image
-            src={imgUrl}
-            alt={name || "User avatar"}
-            fill
+            src={imageUrl}
+            alt={name}
             className="object-cover"
+            fill
+            quality={100}
           />
         ) : (
           <AvatarFallback

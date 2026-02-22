@@ -1,5 +1,3 @@
-import { PaginatedSearchParams } from "./global";
-
 interface SignInWithOAuthParams {
   provider: "github" | "google";
   providerAccountId: string;
@@ -7,14 +5,14 @@ interface SignInWithOAuthParams {
     name: string;
     username: string;
     email: string;
-    image?: string;
+    image: string;
   };
 }
 
 interface AuthCredentials {
-  email: string;
   name: string;
   username: string;
+  email: string;
   password: string;
 }
 
@@ -41,11 +39,11 @@ interface IncrementViewsParams {
 }
 
 interface CreateAnswerParams {
-  questionId: string;
   content: string;
+  questionId: string;
 }
 
-interface GetAnswerParams extends PaginatedSearchParams {
+interface GetAnswersParams extends PaginatedSearchParams {
   questionId: string;
 }
 
@@ -62,8 +60,8 @@ interface UpdateVoteCountParams extends CreateVoteParams {
 type HasVotedParams = Pick<CreateVoteParams, "targetId" | "targetType">;
 
 interface HasVotedResponse {
-  hasUpVoted: boolean;
-  hasDownVoted: boolean;
+  hasUpvoted: boolean;
+  hasDownvoted: boolean;
 }
 
 interface CollectionBaseParams {
@@ -75,7 +73,7 @@ interface GetUserParams {
 }
 
 interface GetUserQuestionsParams
-  extends Omit<PaginatedSearchParams, "filter" | "query" | "sort"> {
+  extends Omit<PaginatedSearchParams, "query | filter | sort"> {
   userId: string;
 }
 
@@ -89,6 +87,10 @@ interface GetUserTagsParams {
 
 interface DeleteQuestionParams {
   questionId: string;
+}
+
+interface DeleteAnswerParams {
+  answerId: string;
 }
 
 interface CreateInteractionParams {

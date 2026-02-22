@@ -6,9 +6,9 @@ interface UrlQueryParams {
   value: string;
 }
 
-interface removeUrlQueryParams {
+interface RemoveUrlQueryParams {
   params: string;
-  keysToRemove: Array<string>;
+  keysToRemove: string[];
 }
 
 export const formUrlQuery = ({ params, key, value }: UrlQueryParams) => {
@@ -25,7 +25,7 @@ export const formUrlQuery = ({ params, key, value }: UrlQueryParams) => {
 export const removeKeysFromUrlQuery = ({
   params,
   keysToRemove,
-}: removeUrlQueryParams) => {
+}: RemoveUrlQueryParams) => {
   const queryString = qs.parse(params);
 
   keysToRemove.forEach((key) => {

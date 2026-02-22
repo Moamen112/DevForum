@@ -1,36 +1,32 @@
 "use server";
 
-import {
-  CreateVoteParams,
-  HasVotedParams,
-  HasVotedResponse,
-  UpdateVoteCountParams,
-} from "@/types/action";
-import { ActionResponse, ErrorResponse } from "@/types/global";
-import action from "../handlers/actions";
+import mongoose, { ClientSession } from "mongoose";
+import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+
+import { Answer, Question } from "@/database";
+import Vote from "@/database/vote.model";
+
+import action from "../handlers/action";
+import handleError from "../handlers/error";
 import {
   CreateVoteSchema,
   HasVotedSchema,
   UpdateVoteCountSchema,
 } from "../validations";
-import handleError from "../handlers/error";
-import mongoose, { ClientSession } from "mongoose";
-import { Answer, Question, Vote } from "@/database";
-import { revalidatePath } from "next/cache";
-import ROUTES from "@/constants/routes";
+import { createInteraction } from "./interaction.action";
 
-export async function updateVoteCount(
+async function updateVoteCount(
   params: UpdateVoteCountParams,
   session?: ClientSession
 ): Promise<ActionResponse> {
   const validationResult = await action({
     params,
     schema: UpdateVoteCountSchema,
-    authorize: true,
   });
 
   if (validationResult instanceof Error) {
-    return handleError(validationResult) as ActionResponse;
+    return handleError(validationResult) as ErrorResponse;
   }
 
   const { targetId, targetType, voteType, change } = validationResult.params!;
@@ -45,10 +41,7 @@ export async function updateVoteCount(
       { new: true, session }
     );
 
-    if (!result)
-      return handleError(
-        new Error("Failed to update vote count")
-      ) as ErrorResponse;
+    if (!result) throw new Error("Failed to update vote count");
 
     return { success: true };
   } catch (error) {
@@ -66,72 +59,109 @@ export async function createVote(
   });
 
   if (validationResult instanceof Error) {
-    return handleError(validationResult) as ActionResponse;
+    return handleError(validationResult) as ErrorResponse;
   }
 
   const { targetId, targetType, voteType } = validationResult.params!;
   const userId = validationResult.session?.user?.id;
 
-  if (!userId)
-    return handleError(new Error("User ID is missing")) as ErrorResponse;
+  if (!userId) return handleError(new Error("Unauthorized")) as ErrorResponse;
 
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
+    const Model = targetType === "question" ? Question : Answer;
+
+    const contentDoc = await Model.findById(targetId).session(session);
+    if (!contentDoc) throw new Error("Content not found");
+
+    const contentAuthorId = contentDoc.author.toString();
+
     const existingVote = await Vote.findOne({
       author: userId,
-      id: targetId,
-      type: targetType,
+      actionId: targetId,
+      actionType: targetType,
     }).session(session);
 
     if (existingVote) {
       if (existingVote.voteType === voteType) {
-        //if the user has already voted with the same type, remove the vote
+        // If user is voting again with the same vote type, remove the vote
         await Vote.deleteOne({ _id: existingVote._id }).session(session);
         await updateVoteCount(
-          { targetId, targetType, voteType, change: -1 },
+          {
+            targetId,
+            targetType,
+            voteType,
+            change: -1,
+          },
           session
         );
       } else {
-        // If the user has already voted with a different type, update the vote
+        // If user is changing their vote, update voteType and adjust counts
         await Vote.findByIdAndUpdate(
           existingVote._id,
           { voteType },
           { new: true, session }
         );
-
         await updateVoteCount(
-          { targetId, targetType, voteType: existingVote.voteType, change: -1 },
+          {
+            targetId,
+            targetType,
+            voteType: existingVote.voteType,
+            change: -1,
+          },
           session
         );
         await updateVoteCount(
-          { targetId, targetType, voteType, change: 1 },
+          {
+            targetId,
+            targetType,
+            voteType,
+            change: 1,
+          },
           session
         );
       }
     } else {
+      // First-time vote creation
       await Vote.create(
         [
           {
             author: userId,
-            id: targetId,
-            type: targetType,
+            actionId: targetId,
+            actionType: targetType,
             voteType,
           },
         ],
-        {
-          session,
-        }
+        { session }
       );
       await updateVoteCount(
-        { targetId, targetType, voteType, change: 1 },
+        {
+          targetId,
+          targetType,
+          voteType,
+          change: 1,
+        },
         session
       );
     }
+
+    // log the interaction
+    after(async () => {
+      await createInteraction({
+        action: voteType,
+        actionId: targetId,
+        actionTarget: targetType,
+        authorId: contentAuthorId,
+      });
+    });
+
     await session.commitTransaction();
     session.endSession();
-    revalidatePath(ROUTES.QUESTION(targetId));
+
+    revalidatePath(`/questions/${targetId}`);
+
     return { success: true };
   } catch (error) {
     await session.abortTransaction();
@@ -159,22 +189,24 @@ export async function hasVoted(
   try {
     const vote = await Vote.findOne({
       author: userId,
-      id: targetId,
-      type: targetType,
+      actionId: targetId,
+      actionType: targetType,
     });
 
-    if (!vote) {
+    if (!vote)
       return {
         success: false,
-        data: { hasUpVoted: false, hasDownVoted: false },
+        data: {
+          hasUpvoted: false,
+          hasDownvoted: false,
+        },
       };
-    }
 
     return {
       success: true,
       data: {
-        hasUpVoted: vote.voteType === "upvote",
-        hasDownVoted: vote.voteType === "downvote",
+        hasUpvoted: vote.voteType === "upvote",
+        hasDownvoted: vote.voteType === "downvote",
       },
     };
   } catch (error) {

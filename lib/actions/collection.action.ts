@@ -1,19 +1,17 @@
 "use server";
 
-import { CollectionBaseParams } from "@/types/action";
-import {
-  ActionResponse,
-  Collection as CollectionTypes,
-  ErrorResponse,
-  PaginatedSearchParams,
-} from "@/types/global";
-import action from "../handlers/actions";
-import { CollectionBaseSchema, PaginatedSearchSchema } from "../validations";
-import handleError from "../handlers/error";
-import { Collection, Question } from "@/database";
-import ROUTES from "@/constants/routes";
+import mongoose, { PipelineStage } from "mongoose";
 import { revalidatePath } from "next/cache";
-import mongoose, { FilterQuery, PipelineStage } from "mongoose";
+
+import ROUTES from "@/constants/routes";
+import { Collection, Question } from "@/database";
+
+import action from "../handlers/action";
+import handleError from "../handlers/error";
+import {
+  CollectionBaseSchema,
+  PaginatedSearchParamsSchema,
+} from "../validations";
 
 export async function toggleSaveQuestion(
   params: CollectionBaseParams
@@ -33,10 +31,7 @@ export async function toggleSaveQuestion(
 
   try {
     const question = await Question.findById(questionId);
-
-    if (!question) {
-      throw new Error("Question not found");
-    }
+    if (!question) throw new Error("Question not found");
 
     const collection = await Collection.findOne({
       question: questionId,
@@ -45,13 +40,30 @@ export async function toggleSaveQuestion(
 
     if (collection) {
       await Collection.findByIdAndDelete(collection._id);
+
       revalidatePath(ROUTES.QUESTION(questionId));
-      return { success: true, data: { saved: false } };
-    } else {
-      await Collection.create({ question: questionId, author: userId });
-      revalidatePath(ROUTES.QUESTION(questionId));
-      return { success: true, data: { saved: true } };
+
+      return {
+        success: true,
+        data: {
+          saved: false,
+        },
+      };
     }
+
+    await Collection.create({
+      question: questionId,
+      author: userId,
+    });
+
+    revalidatePath(ROUTES.QUESTION(questionId));
+
+    return {
+      success: true,
+      data: {
+        saved: true,
+      },
+    };
   } catch (error) {
     return handleError(error) as ErrorResponse;
   }
@@ -79,18 +91,23 @@ export async function hasSavedQuestion(
       author: userId,
     });
 
-    return { success: true, data: { saved: !!collection } };
+    return {
+      success: true,
+      data: {
+        saved: !!collection,
+      },
+    };
   } catch (error) {
     return handleError(error) as ErrorResponse;
   }
 }
 
-export async function getSaveQuestions(
+export async function getSavedQuestions(
   params: PaginatedSearchParams
-): Promise<ActionResponse<{ collection: CollectionTypes[]; isNext: boolean }>> {
+): Promise<ActionResponse<{ collection: Collection[]; isNext: boolean }>> {
   const validationResult = await action({
     params,
-    schema: PaginatedSearchSchema,
+    schema: PaginatedSearchParamsSchema,
     authorize: true,
   });
 
@@ -101,8 +118,8 @@ export async function getSaveQuestions(
   const userId = validationResult.session?.user?.id;
   const { page = 1, pageSize = 10, query, filter } = params;
 
-  const skip = (Number(page) - 1) * Number(pageSize);
-  const limit = Number(pageSize);
+  const skip = (Number(page) - 1) * pageSize;
+  const limit = pageSize;
 
   const sortOptions: Record<string, Record<string, 1 | -1>> = {
     mostrecent: { "question.createdAt": -1 },
@@ -158,21 +175,17 @@ export async function getSaveQuestions(
       });
     }
 
-    const totalCountResult = await Collection.aggregate([
+    const [totalCount] = await Collection.aggregate([
       ...pipeline,
       { $count: "count" },
     ]);
-    const totalCount = totalCountResult[0]?.count ?? 0;
+
     pipeline.push({ $sort: sortCriteria }, { $skip: skip }, { $limit: limit });
-    pipeline.push({
-      $project: {
-        question: 1,
-        author: 1,
-      },
-    });
+    pipeline.push({ $project: { question: 1, author: 1 } });
 
     const questions = await Collection.aggregate(pipeline);
-    const isNext = totalCount > skip + questions.length;
+
+    const isNext = totalCount.count > skip + questions.length;
 
     return {
       success: true,

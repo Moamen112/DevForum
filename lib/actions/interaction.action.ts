@@ -1,12 +1,11 @@
-import { Interaction, User } from "@/database";
-import { ActionResponse, ErrorResponse } from "@/types/global";
 import mongoose from "mongoose";
-import action from "../handlers/actions";
-import handleError from "../handlers/error";
-import { CreateInteractionParams, UpdateReputationParams } from "@/types/action";
-import { CreateInteractionSchema } from "../validations";
+
+import { Interaction, User } from "@/database";
 import { IInteractionDoc } from "@/database/interaction.model";
 
+import action from "../handlers/action";
+import handleError from "../handlers/error";
+import { CreateInteractionSchema } from "../validations";
 
 export async function createInteraction(
   params: CreateInteractionParams

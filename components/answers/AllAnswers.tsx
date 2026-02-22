@@ -1,13 +1,12 @@
-import { ActionResponse, Answer } from "@/types/global";
-import React from "react";
-import DataRenderer from "../DataRenderer";
-import { EMPTY_ANSWERS } from "@/constants/states";
-import AnswerCard from "./AnswerCard";
-import CommonFilter from "../filters/CommonFilter";
 import { AnswerFilters } from "@/constants/filters";
+import { EMPTY_ANSWERS } from "@/constants/states";
+
+import AnswerCard from "../cards/AnswerCard";
+import DataRenderer from "../DataRenderer";
+import CommonFilter from "../filters/CommonFilter";
 import Pagination from "../Pagination";
 
-interface Props extends ActionResponse<Answer[] | []> {
+interface Props extends ActionResponse<Answer[]> {
   page: number;
   isNext: boolean;
   totalAnswers: number;
@@ -21,13 +20,11 @@ const AllAnswers = ({
   error,
   totalAnswers,
 }: Props) => {
-  const label = totalAnswers > 1 ? "Answers" : "Answer";
-
   return (
     <div className="mt-11">
       <div className="flex items-center justify-between">
         <h3 className="primary-text-gradient">
-          {totalAnswers} {label}
+          {totalAnswers} {totalAnswers === 1 ? "Answer" : "Answers"}
         </h3>
         <CommonFilter
           filters={AnswerFilters}
@@ -38,15 +35,15 @@ const AllAnswers = ({
 
       <DataRenderer
         data={data}
-        success={success}
         error={error}
+        success={success}
         empty={EMPTY_ANSWERS}
         render={(answers) =>
           answers.map((answer) => <AnswerCard key={answer._id} {...answer} />)
         }
       />
 
-      <Pagination page={page} isNext={isNext || false} />
+      <Pagination page={page} isNext={isNext} />
     </div>
   );
 };
