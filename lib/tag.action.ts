@@ -1,10 +1,9 @@
-import action from "./handlers/actions";
+import action from "./handlers/action";
 import { GetTagQuestionsSchema, PaginatedSearchParamsSchema } from "./validations";
 import handleError from "./handlers/error";
 import { FilterQuery } from "mongoose";
 import { Question as QuestionModel, Tag as TagModel } from "@/database";
 import dbConnect from "./mongoose";
-import action from "./handlers/actions";
 
 export const getTags = async (
   params: PaginatedSearchParams

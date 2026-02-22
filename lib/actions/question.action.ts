@@ -6,7 +6,7 @@ import { after } from "next/server";
 
 import { auth } from "@/auth";
 import { Answer, Collection, Interaction, Vote } from "@/database";
-import Question, { IQuestionDoc } from "@/database/question.model";
+import Question from "@/database/question.model";
 import TagQuestion from "@/database/tag-question.model";
 import Tag, { ITagDoc } from "@/database/tag.model";
 import action from "@/lib/handlers/action";
@@ -99,7 +99,7 @@ export async function createQuestion(
 
 export async function editQuestion(
   params: EditQuestionParams
-): Promise<ActionResponse<IQuestionDoc>> {
+): Promise<ActionResponse<Question>> {
   const validationResult = await action({
     params,
     schema: EditQuestionSchema,

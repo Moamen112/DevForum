@@ -4,7 +4,7 @@ import UserAvatar from "../UserAvatar";
 import Link from "next/link";
 import ROUTES from "@/constants/routes";
 import { cn, getTimeStamp } from "@/lib/utils";
-import Preview from "../editor/Preview";
+import { Preview } from "../editor/Preview";
 import Votes from "../votes/Votes";
 import { hasVoted } from "@/lib/actions/vote.action";
 import EditDeleteAction from "../user/EditDeleteAction";
@@ -46,7 +46,7 @@ const AnswerCard = ({
           <UserAvatar
             id={author._id}
             name={author.name}
-            imgUrl={author.image}
+            imageUrl={author.image}
             className="size-5 rounded-full object-cover max-sm:mt-2"
           />
           <Link
@@ -65,8 +65,8 @@ const AnswerCard = ({
         <div className="flex justify-end">
           <Suspense fallback={<div>Loading...</div>}>
             <Votes
-              upVotes={upvotes}
-              downVotes={downvotes}
+              upvotes={upvotes}
+              downvotes={downvotes}
               targetType="answer"
               targetId={_id}
               hasVotedPromise={hasVotedPromise}
