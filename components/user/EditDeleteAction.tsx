@@ -15,6 +15,7 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { deleteQuestion } from "@/lib/actions/question.action";
 
 interface Props {
   type: string;
@@ -29,6 +30,7 @@ const EditDeleteAction = ({ type, itemId }: Props) => {
   const handleDelete = async () => {
     if (type === "Question") {
       // Call API to delete question using itemId
+      await deleteQuestion({questionId: itemId})
       toast.success("Question deleted successfully");
     } else if (type === "Answer") {
       // Call API to delete answer using itemId
@@ -64,7 +66,7 @@ const EditDeleteAction = ({ type, itemId }: Props) => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="btn">Cancel</AlertDialogCancel>
-            <AlertDialogAction className="!border-primary-100 !bg-primary-500 !text-light-800 onClick={handleDelete">
+            <AlertDialogAction className="!border-primary-100 !bg-primary-500 !text-light-800" onClick={handleDelete}>
               Continue
             </AlertDialogAction>
           </AlertDialogFooter>
