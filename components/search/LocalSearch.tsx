@@ -30,11 +30,13 @@ const LocalSearch = ({
 
   const [searchQuery, setSearchQuery] = useState(query);
 
+  const searchParamsString = searchParams.toString();
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (searchQuery) {
         const newUrl = formUrlQuery({
-          params: searchParams.toString(),
+          params: searchParamsString,
           key: "query",
           value: searchQuery,
         });
@@ -43,7 +45,7 @@ const LocalSearch = ({
       } else {
         if (pathname === route) {
           const newUrl = removeKeysFromUrlQuery({
-            params: searchParams.toString(),
+            params: searchParamsString,
             keysToRemove: ["query"],
           });
 
@@ -53,7 +55,7 @@ const LocalSearch = ({
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, router, route, searchParams, pathname]);
+  }, [searchQuery, router, route, searchParamsString, pathname]);
 
   return (
     <div
