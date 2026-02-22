@@ -1,24 +1,16 @@
-import {
-  ActionResponse,
-  ErrorResponse,
-  PaginatedSearchParams,
-  Question as QuestionType,
-  Tag as TagType,
-} from "@/types/global";
-import action from "./handlers/actions";
-import { GetTagQuestionsSchema, PaginatedSearchSchema } from "./validations";
+import action from "./handlers/action";
+import { GetTagQuestionsSchema, PaginatedSearchParamsSchema } from "./validations";
 import handleError from "./handlers/error";
 import { FilterQuery } from "mongoose";
-import { Question, Tag } from "@/database";
-import { GetTagQuestionsParams } from "@/types/action";
+import { Question as QuestionModel, Tag as TagModel } from "@/database";
 import dbConnect from "./mongoose";
 
 export const getTags = async (
   params: PaginatedSearchParams
-): Promise<ActionResponse<{ tags: TagType[]; isNext: boolean }>> => {
+): Promise<ActionResponse<{ tags: Tag[]; isNext: boolean }>> => {
   const validationResult = await action({
     params,
-    schema: PaginatedSearchSchema,
+    schema: PaginatedSearchParamsSchema,
   });
 
   if (validationResult instanceof Error) {
@@ -30,7 +22,7 @@ export const getTags = async (
   const skip = (Number(page) - 1) * pageSize;
   const limit = Number(pageSize);
 
-  const filterQuery: FilterQuery<typeof Tag> = {};
+  const filterQuery: FilterQuery<typeof TagModel> = {};
 
   if (query) {
     filterQuery.$or = [{ name: { $regex: query, $options: "i" } }];
@@ -54,8 +46,8 @@ export const getTags = async (
   }
 
   try {
-    const totalTags = await Tag.countDocuments(filterQuery);
-    const tags = await Tag.find(filterQuery)
+    const totalTags = await TagModel.countDocuments(filterQuery);
+    const tags = await TagModel.find(filterQuery)
       .sort(sortCriteria)
       .skip(skip)
       .limit(limit);
@@ -73,7 +65,7 @@ export const getTags = async (
 export const getTagQuestions = async (
   params: GetTagQuestionsParams
 ): Promise<
-  ActionResponse<{ tag: TagType; questions: QuestionType[]; isNext: boolean }>
+  ActionResponse<{ tag: Tag; questions: Question[]; isNext: boolean }>
 > => {
   const validationResult = await action({
     params,
@@ -90,18 +82,18 @@ export const getTagQuestions = async (
   const limit = Number(pageSize);
 
   try {
-    const tag = await Tag.findById(tagId);
+    const tag = await TagModel.findById(tagId);
     if (!tag) throw new Error("Tag not found");
 
-    const filterQuery: FilterQuery<typeof Question> = {
+    const filterQuery: FilterQuery<typeof QuestionModel> = {
       tags: { $in: [tagId] },
     };
 
     if (query) {
       filterQuery.title = [{ $regex: query, $options: "i" }];
     }
-    const totalQuestions = await Question.countDocuments(filterQuery);
-    const questions = await Question.find(filterQuery)
+    const totalQuestions = await QuestionModel.countDocuments(filterQuery);
+    const questions = await QuestionModel.find(filterQuery)
       .select("_id title views answers upvotes downvotes author createdAt")
       .populate([
         { path: "author", select: "name image" },
@@ -124,10 +116,10 @@ export const getTagQuestions = async (
   }
 };
 
-export const getTopTags = async (): Promise<ActionResponse<TagType[]>> => {
+export const getTopTags = async (): Promise<ActionResponse<Tag[]>> => {
   try {
     await dbConnect();
-    const tags = await Tag.find().sort({ questions: -1 }).limit(10);
+    const tags = await TagModel.find().sort({ questions: -1 }).limit(10);
     return {
       success: true,
       data: JSON.parse(JSON.stringify(tags)),

@@ -1,11 +1,12 @@
 "use client";
 
-import { incrementViews } from "@/lib/actions/question.action";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
 
+import { incrementViews } from "@/lib/actions/question.action";
+
 const View = ({ questionId }: { questionId: string }) => {
-  const handleIncrement = async () => {
+  const handleIncrement = useCallback(async () => {
     const result = await incrementViews({ questionId });
 
     if (result.success) {
@@ -13,11 +14,11 @@ const View = ({ questionId }: { questionId: string }) => {
     } else {
       toast.error(result.error?.message || "Failed to increment view count");
     }
-  };
+  }, [questionId]);
 
   useEffect(() => {
     handleIncrement();
-  }, []);
+  }, [handleIncrement]);
   return null;
 };
 

@@ -7,6 +7,7 @@ import {
   DefaultValues,
   FieldValues,
   Path,
+  Resolver,
   SubmitHandler,
   useForm,
 } from "react-hook-form";
@@ -40,8 +41,9 @@ const AuthForm = <T extends FieldValues>({
 }: AuthFormProps<T>) => {
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  const form = useForm<T>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema as any) as unknown as Resolver<T>,
     defaultValues: defaultValues as DefaultValues<T>,
   });
 
