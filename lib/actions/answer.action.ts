@@ -1,19 +1,25 @@
 "use server";
 
-import Answer, { IAnswer, IAnswerDoc } from "@/database/answer.model";
 import mongoose from "mongoose";
-import { CreateAnswerParams, GetAnswerParams } from "@/types/action";
-import { ActionResponse, ErrorResponse } from "@/types/global";
-import action from "../handlers/actions";
-import { AnswerServerSchema, GetAnswerSchema } from "../validations";
-import handleError from "../handlers/error";
-import { Question } from "@/database";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+
 import ROUTES from "@/constants/routes";
+import { Question, Vote } from "@/database";
+import Answer, { IAnswerDoc } from "@/database/answer.model";
+
+import action from "../handlers/action";
+import handleError from "../handlers/error";
+import {
+  AnswerServerSchema,
+  DeleteAnswerSchema,
+  GetAnswersSchema,
+} from "../validations";
+import { createInteraction } from "./interaction.action";
 
 export async function createAnswer(
   params: CreateAnswerParams
-): Promise<ActionResponse<IAnswer>> {
+): Promise<ActionResponse<IAnswerDoc>> {
   const validationResult = await action({
     params,
     schema: AnswerServerSchema,
@@ -25,12 +31,13 @@ export async function createAnswer(
   }
 
   const { content, questionId } = validationResult.params!;
-  const userId = validationResult?.session?.user?.id;
+  const userId = validationResult.session?.user?.id;
 
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
+    // check if the question exists
     const question = await Question.findById(questionId);
     if (!question) throw new Error("Question not found");
 
@@ -45,10 +52,22 @@ export async function createAnswer(
       { session }
     );
 
-    if (!newAnswer) throw new Error("Failed to create answer");
+    if (!newAnswer) throw new Error("Failed to create the answer");
 
+    // update the question answers count
     question.answers += 1;
     await question.save({ session });
+
+    // log the interaction
+    after(async () => {
+      await createInteraction({
+        action: "post",
+        actionId: newAnswer._id.toString(),
+        actionTarget: "answer",
+        authorId: userId as string,
+      });
+    });
+
     await session.commitTransaction();
 
     revalidatePath(ROUTES.QUESTION(questionId));
@@ -62,34 +81,26 @@ export async function createAnswer(
   }
 }
 
-export async function getAnswers(
-  params: GetAnswerParams
-): Promise<
+export async function getAnswers(params: GetAnswersParams): Promise<
   ActionResponse<{
-    answers: IAnswerDoc[];
+    answers: Answer[];
     isNext: boolean;
     totalAnswers: number;
   }>
 > {
   const validationResult = await action({
     params,
-    schema: GetAnswerSchema,
-    authorize: false,
+    schema: GetAnswersSchema,
   });
 
   if (validationResult instanceof Error) {
     return handleError(validationResult) as ErrorResponse;
   }
 
-  const {
-    questionId,
-    page = 1,
-    pageSize = 10,
-    filter,
-  } = validationResult.params!;
+  const { questionId, page = 1, pageSize = 10, filter } = params;
 
-  const skip = (Number(page) - 1) * Number(pageSize);
-  const limit = Number(pageSize);
+  const skip = (Number(page) - 1) * pageSize;
+  const limit = pageSize;
 
   let sortCriteria = {};
 
@@ -127,6 +138,60 @@ export async function getAnswers(
         totalAnswers,
       },
     };
+  } catch (error) {
+    return handleError(error) as ErrorResponse;
+  }
+}
+
+export async function deleteAnswer(
+  params: DeleteAnswerParams
+): Promise<ActionResponse> {
+  const validationResult = await action({
+    params,
+    schema: DeleteAnswerSchema,
+    authorize: true,
+  });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { answerId } = validationResult.params!;
+  const { user } = validationResult.session!;
+
+  try {
+    const answer = await Answer.findById(answerId);
+    if (!answer) throw new Error("Answer not found");
+
+    if (answer.author.toString() !== user?.id)
+      throw new Error("You're not allowed to delete this answer");
+
+    // reduce the question answers count
+    await Question.findByIdAndUpdate(
+      answer.question,
+      { $inc: { answers: -1 } },
+      { new: true }
+    );
+
+    // delete votes associated with answer
+    await Vote.deleteMany({ actionId: answerId, actionType: "answer" });
+
+    // delete the answer
+    await Answer.findByIdAndDelete(answerId);
+
+    // log the interaction
+    after(async () => {
+      await createInteraction({
+        action: "delete",
+        actionId: answerId,
+        actionTarget: "answer",
+        authorId: user?.id as string,
+      });
+    });
+
+    revalidatePath(`/profile/${user?.id}`);
+
+    return { success: true };
   } catch (error) {
     return handleError(error) as ErrorResponse;
   }

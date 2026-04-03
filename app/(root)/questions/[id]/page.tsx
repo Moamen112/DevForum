@@ -1,47 +1,69 @@
+import { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { after } from "next/server";
+import React, { Suspense } from "react";
+
 import AllAnswers from "@/components/answers/AllAnswers";
 import TagCard from "@/components/cards/TagCard";
-import Preview from "@/components/editor/Preview";
+import { Preview } from "@/components/editor/Preview";
 import AnswerForm from "@/components/forms/AnswerForm";
 import Metric from "@/components/Metric";
 import SaveQuestion from "@/components/questions/SaveQuestion";
 import UserAvatar from "@/components/UserAvatar";
 import Votes from "@/components/votes/Votes";
 import ROUTES from "@/constants/routes";
-import { Answer } from "@/database";
 import { getAnswers } from "@/lib/actions/answer.action";
 import { hasSavedQuestion } from "@/lib/actions/collection.action";
 import { getQuestion, incrementViews } from "@/lib/actions/question.action";
 import { hasVoted } from "@/lib/actions/vote.action";
 import { formatNumber, getTimeStamp } from "@/lib/utils";
-import { RouteParams, Tag } from "@/types/global";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { after } from "next/server";
-import React, { Suspense } from "react";
-import { success } from "zod";
-import { id } from "zod/v4/locales";
+
+export async function generateMetadata({
+  params,
+}: RouteParams): Promise<Metadata> {
+  const { id } = await params;
+
+  const { success, data: question } = await getQuestion({ questionId: id });
+
+  if (!success || !question) {
+    return {
+      title: "Question not found",
+      description: "This question does not exist.",
+    };
+  }
+
+  return {
+    title: question.title,
+    description: question.content.slice(0, 100),
+    twitter: {
+      card: "summary_large_image",
+      title: question.title,
+      description: question.content.slice(0, 100),
+    },
+  };
+}
 
 const QuestionDetails = async ({ params, searchParams }: RouteParams) => {
   const { id } = await params;
   const { page, pageSize, filter } = await searchParams;
   const { success, data: question } = await getQuestion({ questionId: id });
+
   after(async () => {
     await incrementViews({ questionId: id });
   });
 
-  if (!success || !question) {
-    return redirect("/404");
-  }
+  if (!success || !question) return redirect("/404");
 
   const {
-    success: areAnswerLoaded,
-    data: answerResult,
-    error: answerError,
+    success: areAnswersLoaded,
+    data: answersResult,
+    error: answersError,
   } = await getAnswers({
     questionId: id,
-    page: page ? Number(page) : 1,
-    pageSize: pageSize ? Number(pageSize) : 2,
-    filter: filter ? String(filter) : "latest",
+    page: Number(page) || 1,
+    pageSize: Number(pageSize) || 10,
+    filter,
   });
 
   const hasVotedPromise = hasVoted({
@@ -53,17 +75,17 @@ const QuestionDetails = async ({ params, searchParams }: RouteParams) => {
     questionId: question._id,
   });
 
-  const { author, createdAt, answers, views, title, tags, content } = question;
+  const { author, createdAt, answers, views, tags, content, title } = question;
 
   return (
     <>
       <div className="flex-start w-full flex-col">
-        <div className="flex flex-col-reverse w-full justify-between">
+        <div className="flex w-full flex-col-reverse justify-between">
           <div className="flex items-center justify-start gap-1">
             <UserAvatar
               id={author._id}
               name={author.name}
-              imgUrl={author.image}
+              imageUrl={author.image}
               className="size-[22px]"
               fallbackClassName="text-[10px]"
             />
@@ -73,12 +95,13 @@ const QuestionDetails = async ({ params, searchParams }: RouteParams) => {
               </p>
             </Link>
           </div>
+
           <div className="flex items-center justify-end gap-4">
             <Suspense fallback={<div>Loading...</div>}>
               <Votes
-                upVotes={question.upvotes}
-                downVotes={question.downvotes}
                 targetType="question"
+                upvotes={question.upvotes}
+                downvotes={question.downvotes}
                 targetId={question._id}
                 hasVotedPromise={hasVotedPromise}
               />
@@ -92,10 +115,12 @@ const QuestionDetails = async ({ params, searchParams }: RouteParams) => {
             </Suspense>
           </div>
         </div>
+
         <h2 className="h2-semibold text-dark200_light900 mt-3.5 w-full">
           {title}
         </h2>
       </div>
+
       <div className="mb-8 mt-5 flex flex-wrap gap-4">
         <Metric
           imgUrl="/icons/clock.svg"
@@ -136,15 +161,11 @@ const QuestionDetails = async ({ params, searchParams }: RouteParams) => {
       <section className="my-5">
         <AllAnswers
           page={Number(page) || 1}
-          isNext={answerResult?.isNext || false}
-          data={answerResult?.answers?.map((a: any) => ({
-            _id: a._id,
-            createdAt: a.createdAt,
-            ...a,
-          }))}
-          success={areAnswerLoaded}
-          error={answerError}
-          totalAnswers={answerResult?.totalAnswers || 0}
+          isNext={answersResult?.isNext || false}
+          data={answersResult?.answers}
+          success={areAnswersLoaded}
+          error={answersError}
+          totalAnswers={answersResult?.totalAnswers || 0}
         />
       </section>
 

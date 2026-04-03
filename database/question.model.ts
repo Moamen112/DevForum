@@ -1,6 +1,6 @@
 import { model, models, Schema, Types } from "mongoose";
 
-export interface IQuestion {
+export interface IQuestionDoc {
   title: string;
   content: string;
   tags: Types.ObjectId[];
@@ -11,7 +11,7 @@ export interface IQuestion {
   author: Types.ObjectId;
 }
 
-const QuestionSchema = new Schema<IQuestion>(
+const QuestionSchema = new Schema<IQuestionDoc>(
   {
     title: { type: String, required: true },
     content: { type: String, required: true },
@@ -26,6 +26,6 @@ const QuestionSchema = new Schema<IQuestion>(
 );
 
 const Question =
-  models?.Question || model<IQuestion>("Question", QuestionSchema);
+  models?.Question || model<IQuestionDoc>("Question", QuestionSchema);
 
 export default Question;

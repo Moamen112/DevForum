@@ -1,27 +1,26 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import React from "react";
-import { Button } from "./ui/button";
-import { formUrlQuery } from "@/lib/url";
 import { useRouter, useSearchParams } from "next/navigation";
+
+import { formUrlQuery } from "@/lib/url";
+import { cn } from "@/lib/utils";
+
+import { Button } from "./ui/button";
 
 interface Props {
   page: number | undefined | string;
   isNext: boolean;
   containerClasses?: string;
 }
+
 const Pagination = ({ page = 1, isNext, containerClasses }: Props) => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const handleNavigation = (type: "next" | "prev") => {
+  const handleNavigation = (type: "prev" | "next") => {
     const nextPageNumber =
       type === "prev" ? Number(page) - 1 : Number(page) + 1;
 
-    const value = nextPageNumber > 1 ? nextPageNumber.toString() : null;
-
-    // Update URL
     const newUrl = formUrlQuery({
       params: searchParams.toString(),
       key: "page",
@@ -30,9 +29,13 @@ const Pagination = ({ page = 1, isNext, containerClasses }: Props) => {
 
     router.push(newUrl);
   };
+
   return (
     <div
-      className={cn("flex w-full justify-center gap-2 mt-5", containerClasses)}
+      className={cn(
+        "flex w-full items-center justify-center gap-2 mt-5",
+        containerClasses
+      )}
     >
       {/* Previous Page Button */}
       {Number(page) > 1 && (

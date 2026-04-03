@@ -6,37 +6,39 @@ import React from "react";
 interface Props {
   imgUrl: string;
   alt: string;
-  href?: string;
-  value: number | string;
+  value: string | number;
   title: string;
+  href?: string;
   textStyles: string;
   imgStyles?: string;
   isAuthor?: boolean;
   titleStyles?: string;
 }
 
-function Metric({
+const Metric = ({
   imgUrl,
   alt,
-  href,
   value,
   title,
-  imgStyles,
+  href,
   textStyles,
+  imgStyles,
   isAuthor,
   titleStyles,
-}: Props) {
+}: Props) => {
   const metricContent = (
     <>
       <Image
         src={imgUrl}
-        alt="alt"
         width={16}
         height={16}
+        alt={alt}
         className={`rounded-full object-contain ${imgStyles}`}
       />
+
       <p className={`${textStyles} flex items-center gap-1`}>
         {value}
+
         {title ? (
           <span className={cn(`small-regular line-clamp-1`, titleStyles)}>
             {title}
@@ -47,12 +49,12 @@ function Metric({
   );
 
   return href ? (
-    <Link href={href} className="flex-center gap-1 ">
+    <Link href={href} className="flex-center gap-1">
       {metricContent}
     </Link>
   ) : (
-    <div className="flex-center gap-1 ">{metricContent}</div>
+    <div className="flex-center gap-1">{metricContent}</div>
   );
-}
+};
 
 export default Metric;

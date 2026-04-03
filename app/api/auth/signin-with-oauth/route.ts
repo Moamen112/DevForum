@@ -1,13 +1,13 @@
-import Account from "@/database/account.model";
-import User from "@/database/user.model";
-import handleError from "@/lib/handlers/error";
-import { ValidationError } from "@/lib/http.errors";
-import dbConnect from "@/lib/mongoose";
-import { SignInWithOAuthSchema } from "@/lib/validations";
-import { APIErrorResponse } from "@/types/global";
 import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 import slugify from "slugify";
+
+import Account from "@/database/account.model";
+import User from "@/database/user.model";
+import handleError from "@/lib/handlers/error";
+import { ValidationError } from "@/lib/http-errors";
+import dbConnect from "@/lib/mongoose";
+import { SignInWithOAuthSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
   const { provider, providerAccountId, user } = await request.json();
@@ -18,7 +18,6 @@ export async function POST(request: Request) {
   session.startTransaction();
 
   try {
-    // Your logic for signing in with OAuth goes here.
     const validatedData = SignInWithOAuthSchema.safeParse({
       provider,
       providerAccountId,
@@ -46,12 +45,8 @@ export async function POST(request: Request) {
     } else {
       const updatedData: { name?: string; image?: string } = {};
 
-      if (existingUser.name !== name) {
-        updatedData.name = name;
-      }
-      if (existingUser.name !== image) {
-        updatedData.image = image;
-      }
+      if (existingUser.name !== name) updatedData.name = name;
+      if (existingUser.image !== image) updatedData.image = image;
 
       if (Object.keys(updatedData).length > 0) {
         await User.updateOne(
@@ -62,7 +57,7 @@ export async function POST(request: Request) {
     }
 
     const existingAccount = await Account.findOne({
-      userId: existingUser?._id,
+      userId: existingUser._id,
       provider,
       providerAccountId,
     }).session(session);
@@ -72,10 +67,10 @@ export async function POST(request: Request) {
         [
           {
             userId: existingUser._id,
-            provider,
-            providerAccountId,
             name,
             image,
+            provider,
+            providerAccountId,
           },
         ],
         { session }
@@ -83,10 +78,11 @@ export async function POST(request: Request) {
     }
 
     await session.commitTransaction();
+
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     await session.abortTransaction();
-    return handleError(error) as APIErrorResponse;
+    return handleError(error, "api") as APIErrorResponse;
   } finally {
     session.endSession();
   }

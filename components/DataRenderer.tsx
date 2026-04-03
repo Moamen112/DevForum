@@ -1,7 +1,9 @@
-import { DEFAULT_EMPTY, DEFAULT_ERROR } from "@/constants/states";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+
+import { DEFAULT_EMPTY, DEFAULT_ERROR } from "@/constants/states";
+
 import { Button } from "./ui/button";
 
 interface Props<T> {
@@ -22,7 +24,7 @@ interface Props<T> {
   render: (data: T[]) => React.ReactNode;
 }
 
-interface StateSkeletopnProps {
+interface StateSkeletonProps {
   image: {
     light: string;
     dark: string;
@@ -41,24 +43,25 @@ const StateSkeleton = ({
   title,
   message,
   button,
-}: StateSkeletopnProps) => (
-  <div className="mt-16 flex flex-col items-center justify-center sm:mt-30">
+}: StateSkeletonProps) => (
+  <div className="mt-16 flex w-full flex-col items-center justify-center sm:mt-36">
     <>
       <Image
         src={image.dark}
         alt={image.alt}
         width={270}
-        height={270}
+        height={200}
         className="hidden object-contain dark:block"
       />
       <Image
         src={image.light}
         alt={image.alt}
         width={270}
-        height={270}
+        height={200}
         className="block object-contain dark:hidden"
       />
     </>
+
     <h2 className="h2-bold text-dark200_light900 mt-8">{title}</h2>
     <p className="body-regular text-dark500_light700 my-3.5 max-w-md text-center">
       {message}
@@ -86,7 +89,7 @@ const DataRenderer = <T,>({
         image={{
           light: "/images/light-error.png",
           dark: "/images/dark-error.png",
-          alt: "Empty State error",
+          alt: "Error state illustration",
         }}
         title={error?.message || DEFAULT_ERROR.title}
         message={
@@ -98,20 +101,21 @@ const DataRenderer = <T,>({
       />
     );
   }
-  if (!data || data.length === 0) {
+
+  if (!data || data.length === 0)
     return (
       <StateSkeleton
         image={{
           light: "/images/light-illustration.png",
           dark: "/images/dark-illustration.png",
-          alt: "Empty State Illustration",
+          alt: "Empty state illustration",
         }}
         title={empty.title}
         message={empty.message}
         button={empty.button}
       />
     );
-  }
+
   return <div>{render(data)}</div>;
 };
 

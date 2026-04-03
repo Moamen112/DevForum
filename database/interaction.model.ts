@@ -1,13 +1,13 @@
 import { model, models, Schema, Types } from "mongoose";
 
-export interface IInteraction {
+export interface IInteractionDoc {
   user: Types.ObjectId;
   action: string;
   actionId: Types.ObjectId;
   actionType: "question" | "answer";
 }
 
-const InteractionSchema = new Schema<IInteraction>(
+const InteractionSchema = new Schema<IInteractionDoc>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     action: { type: String, required: true },
@@ -18,6 +18,6 @@ const InteractionSchema = new Schema<IInteraction>(
 );
 
 const Interaction =
-  models?.Interaction || model<IInteraction>("Interaction", InteractionSchema);
+  models?.Interaction || model<IInteractionDoc>("Interaction", InteractionSchema);
 
 export default Interaction;

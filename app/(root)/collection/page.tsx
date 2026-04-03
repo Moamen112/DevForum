@@ -1,29 +1,21 @@
-import Link from "next/link";
-
 import QuestionCard from "@/components/cards/QuestionCard";
-import HomeFilter from "@/components/filters/HomeFilter";
-import LocalSearch from "@/components/search/LocalSearch";
-import { Button } from "@/components/ui/button";
-import ROUTES from "@/constants/routes";
-import handleError from "@/lib/handlers/error";
-import { api } from "@/lib/api";
-import { auth } from "@/auth";
-import { getQuestions } from "@/lib/actions/question.action";
 import DataRenderer from "@/components/DataRenderer";
-import { EMPTY_COLLECTION, EMPTY_QUESTION } from "@/constants/states";
-import { getSaveQuestions } from "@/lib/actions/collection.action";
 import CommonFilter from "@/components/filters/CommonFilter";
-import { CollectionFilters } from "@/constants/filters";
 import Pagination from "@/components/Pagination";
+import LocalSearch from "@/components/search/LocalSearch";
+import { CollectionFilters } from "@/constants/filters";
+import ROUTES from "@/constants/routes";
+import { EMPTY_QUESTION } from "@/constants/states";
+import { getSavedQuestions } from "@/lib/actions/collection.action";
 
 interface SearchParams {
   searchParams: Promise<{ [key: string]: string }>;
 }
 
 const Collections = async ({ searchParams }: SearchParams) => {
-  const { page, query, pageSize, filter } = await searchParams;
+  const { page, pageSize, query, filter } = await searchParams;
 
-  const { success, data, error } = await getSaveQuestions({
+  const { success, data, error } = await getSavedQuestions({
     page: Number(page) || 1,
     pageSize: Number(pageSize) || 10,
     query: query || "",
@@ -34,7 +26,8 @@ const Collections = async ({ searchParams }: SearchParams) => {
 
   return (
     <>
-      <h1 className="h1-bold text-dar100_light900">Saved Questions</h1>
+      <h1 className="h1-bold text-dark100_light900">Saved Questions</h1>
+
       <div className="mt-11 flex justify-between gap-5 max-sm:flex-col sm:items-center">
         <LocalSearch
           route={ROUTES.COLLECTION}
@@ -42,26 +35,27 @@ const Collections = async ({ searchParams }: SearchParams) => {
           placeholder="Search questions..."
           otherClasses="flex-1"
         />
+
         <CommonFilter
           filters={CollectionFilters}
           otherClasses="min-h-[56px] sm:min-w-[170px]"
         />
       </div>
-      {
-        <DataRenderer
-          success={success}
-          error={error}
-          data={collection}
-          empty={EMPTY_COLLECTION}
-          render={(collection) => (
-            <div className="mt-10 flex w-full flex-col gap-6">
-              {collection.map((item) => (
-                <QuestionCard key={item._id} question={item.question} />
-              ))}
-            </div>
-          )}
-        />
-      }
+
+      <DataRenderer
+        success={success}
+        error={error}
+        data={collection}
+        empty={EMPTY_QUESTION}
+        render={(collection) => (
+          <div className="mt-10 flex w-full flex-col gap-6">
+            {collection.map((item) => (
+              <QuestionCard key={item._id} question={item.question} />
+            ))}
+          </div>
+        )}
+      />
+
       <Pagination page={page} isNext={isNext || false} />
     </>
   );

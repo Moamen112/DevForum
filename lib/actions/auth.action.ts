@@ -1,15 +1,16 @@
 "use server";
 
-import { ActionResponse, ErrorResponse } from "@/types/global";
-import action from "../handlers/actions";
-import handleError from "../handlers/error";
-import { SignInSchema, SignUpSchema } from "../validations";
-import mongoose from "mongoose";
-import User from "@/database/user.model";
 import bcrypt from "bcryptjs";
-import Account from "@/database/account.model";
+import mongoose from "mongoose";
+
 import { signIn } from "@/auth";
-import { NotFoundError } from "../http.errors";
+import Account from "@/database/account.model";
+import User from "@/database/user.model";
+
+import action from "../handlers/action";
+import handleError from "../handlers/error";
+import { NotFoundError } from "../http-errors";
+import { SignInSchema, SignUpSchema } from "../validations";
 
 export async function signUpWithCredentials(
   params: AuthCredentials
@@ -21,6 +22,7 @@ export async function signUpWithCredentials(
   }
 
   const { name, username, email, password } = validationResult.params!;
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -98,7 +100,7 @@ export async function signInWithCredentials(
       existingAccount.password
     );
 
-    if (!passwordMatch) throw new Error("Invalid credentials");
+    if (!passwordMatch) throw new Error("Password does not match");
 
     await signIn("credentials", { email, password, redirect: false });
 

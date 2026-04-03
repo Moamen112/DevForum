@@ -4,8 +4,7 @@ import Pagination from "@/components/Pagination";
 import LocalSearch from "@/components/search/LocalSearch";
 import ROUTES from "@/constants/routes";
 import { EMPTY_QUESTION } from "@/constants/states";
-import { getTagQuestions } from "@/lib/tag.action";
-import { RouteParams } from "@/types/global";
+import { getTagQuestions } from "@/lib/actions/tag.action";
 
 const Page = async ({ params, searchParams }: RouteParams) => {
   const { id } = await params;

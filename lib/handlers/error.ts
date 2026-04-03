@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import { RequestError, ValidationError } from "../http.errors";
 import { ZodError } from "zod";
+
+import { RequestError, ValidationError } from "../http-errors";
 import logger from "../logger";
-import { error } from "console";
 
 export type ResponseType = "api" | "server";
 
-const formateResponse = (
+const formatResponse = (
   responseType: ResponseType,
   status: number,
   message: string,
-  errors?: Record<string, string[]>
+  errors?: Record<string, string[]> | undefined
 ) => {
   const responseContent = {
     success: false,
@@ -31,11 +31,12 @@ const handleError = (error: unknown, responseType: ResponseType = "server") => {
       { err: error },
       `${responseType.toUpperCase()} Error: ${error.message}`
     );
-    return formateResponse(
+
+    return formatResponse(
       responseType,
       error.statusCode,
       error.message,
-      error.error
+      error.errors
     );
   }
 
@@ -48,20 +49,23 @@ const handleError = (error: unknown, responseType: ResponseType = "server") => {
       { err: error },
       `Validation Error: ${validationError.message}`
     );
-    return formateResponse(
+
+    return formatResponse(
       responseType,
       validationError.statusCode,
       validationError.message,
-      validationError.error
+      validationError.errors
     );
   }
 
   if (error instanceof Error) {
     logger.error(error.message);
-    return formateResponse(responseType, 500, error.message);
+
+    return formatResponse(responseType, 500, error.message);
   }
-  logger.error({ err: error }, `Unexpected Error has occurred`);
-  return formateResponse(responseType, 500, "An unexpected error occurred");
+
+  logger.error({ err: error }, "An unexpected error occurred");
+  return formatResponse(responseType, 500, "An unexpected error occurred");
 };
 
 export default handleError;
